@@ -87,6 +87,11 @@ export interface GroupRecord {
   createdAt: number;
   /** Received messages up to this time have been seen. */
   lastReadAt?: number;
+  /**
+   * Members whose public keys are still being fetched from the Directory. The group is saved
+   * before that lookup, so a reload mid-lookup cannot lose the invitation.
+   */
+  unresolved?: string[];
 }
 
 /** Conversation id a group's messages are filed under (MessageRecord.contactPin). */

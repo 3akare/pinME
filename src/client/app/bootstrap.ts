@@ -324,6 +324,7 @@ export function bootstrapApp(force = false): Promise<boolean> {
       await hydrateGroups(store, pins.map((p) => p.pin));
       await startConnections();
       void createFlow(store).resumePendingAccepts().catch(() => {});
+      void getGroupFlow(store).resolvePending(pins.map((p) => p.pin)).catch(() => {});
       return true;
     } catch {
       booted = null;

@@ -15,6 +15,7 @@ async function onboard(page: Page, name: string): Promise<string> {
   return link;
 }
 
+const bubble = (page: Page, text: string) => page.getByTestId("message-bubble").filter({ hasText: text });
 const chatRow = (page: Page, name: string) => page.getByRole("list", { name: "Chats" }).getByRole("button", { name: new RegExp(name) });
 
 test("a group lets members who are not contacts talk to each other", async ({ browser }) => {
@@ -54,17 +55,17 @@ test("a group lets members who are not contacts talk to each other", async ({ br
     await bo!.locator("#message-text").fill(`hello from bo ${run}`);
     await bo!.locator("#message-text").press("Enter");
     await chatRow(cy!, name).click();
-    await expect(cy!.getByText(`hello from bo ${run}`)).toBeVisible({ timeout: 15_000 });
+    await expect(bubble(cy!, `hello from bo ${run}`)).toBeVisible({ timeout: 15_000 });
     await cy!.locator("#message-text").fill(`hi bo, cy here ${run}`);
     await cy!.locator("#message-text").press("Enter");
-    await expect(bo!.getByText(`hi bo, cy here ${run}`)).toBeVisible({ timeout: 15_000 });
-    await expect(host!.getByText(`hi bo, cy here ${run}`)).toBeVisible({ timeout: 15_000 });
+    await expect(bubble(bo!, `hi bo, cy here ${run}`)).toBeVisible({ timeout: 15_000 });
+    await expect(bubble(host!, `hi bo, cy here ${run}`)).toBeVisible({ timeout: 15_000 });
 
     // Bo leaves; the others see it.
     await bo!.getByRole("button", { name: "Leave", exact: true }).click();
     await bo!.getByRole("button", { name: "Leave group" }).click();
     await expect(chatRow(bo!, name)).toHaveCount(0, { timeout: 15_000 });
-    await expect(cy!.getByText("Bo left.")).toBeVisible({ timeout: 15_000 });
+    await expect(cy!.getByRole("log", { name: "Conversation" }).getByText("Bo left.")).toBeVisible({ timeout: 15_000 });
   } finally {
     await Promise.all(ctx.map((c) => c.close()));
   }

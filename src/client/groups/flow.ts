@@ -34,7 +34,15 @@ export interface GroupFlowDeps {
   getPublicProfileFn: (pin: string) => Promise<ServerResult<PublicProfile>>;
   newId?: () => string;
   now?: () => number;
+  /** Waits before leaving server-side (tests pass a no-op). */
+  sleep?: (ms: number) => Promise<void>;
 }
+
+/**
+ * The farewell travels through the relay, which only passes it while you are still a member, so
+ * the server-side leave waits this long behind it.
+ */
+export const LEAVE_GRACE_MS = 2000;
 
 export type GroupFailure = { ok: false; code: string };
 
@@ -111,7 +119,7 @@ export function createGroupFlow(deps: GroupFlowDeps) {
     /** Records a group message and sends it now, or queues it until the PIN reconnects. */
     async send(ownPin: string, groupId: string, text: string): Promise<{ ok: true; message: MessageRecord } | GroupFailure> {
       if (text.length < 1 || text.length > MAX_PLAINTEXT_CHARS) return { ok: false, code: "invalid_text" };
-      const [own, group] = await Promise.all([activePin(ownPin), deps.repos.groupRepo.get(ownPin, groupId)]);
+      const [own, group] = await Promise.all([activePin(ownPin), api.resolve(ownPin, groupId)]);
       if (!own || !group) return { ok: false, code: "unknown_group" };
       const message: MessageRecord = {
         ownPin,
@@ -133,7 +141,7 @@ export function createGroupFlow(deps: GroupFlowDeps) {
     /** Sends a queued group message (from flushPending); receivers drop repeats by Message_ID. */
     async transmit(m: MessageRecord): Promise<boolean> {
       const groupId = m.contactPin.slice(2);
-      const [own, group] = await Promise.all([activePin(m.ownPin), deps.repos.groupRepo.get(m.ownPin, groupId)]);
+      const [own, group] = await Promise.all([activePin(m.ownPin), api.resolve(m.ownPin, groupId)]);
       if (!own || !group) return false;
       return fanOut(own, group.members, { t: "msg", g: groupId, text: m.text }, m.messageId);
     },
@@ -142,7 +150,9 @@ export function createGroupFlow(deps: GroupFlowDeps) {
     async leave(ownPin: string, groupId: string): Promise<{ ok: true } | GroupFailure> {
       const [own, group] = await Promise.all([activePin(ownPin), deps.repos.groupRepo.get(ownPin, groupId)]);
       if (!own || !group) return { ok: false, code: "unknown_group" };
-      if (deps.isConnected(ownPin)) fanOut(own, group.members, { t: "leave", g: groupId }, newId());
+      if (deps.isConnected(ownPin) && fanOut(own, group.members, { t: "leave", g: groupId }, newId())) {
+        await (deps.sleep ?? ((ms) => new Promise<void>((r) => setTimeout(r, ms))))(LEAVE_GRACE_MS);
+      }
       const res = await deps.leaveGroupFn(sign(own, "leaveGroup", { groupId }));
       if (!res.ok && res.code !== "not_found") return { ok: false, code: res.code };
       await deps.repos.groupRepo.delete(ownPin, groupId);
@@ -152,11 +162,47 @@ export function createGroupFlow(deps: GroupFlowDeps) {
       return { ok: true };
     },
 
+    /**
+     * Fetches the keys of members that are still unresolved. Keys come from the Directory, never
+     * from the creator; a PIN that is gone (burned, unknown) is dropped from the group.
+     */
+    async resolve(ownPin: string, groupId: string): Promise<GroupRecord | null> {
+      const g = await deps.repos.groupRepo.get(ownPin, groupId);
+      if (!g?.unresolved?.length) return g ?? null;
+      const members = [...g.members];
+      const still: string[] = [];
+      for (const pin of g.unresolved) {
+        const prof = await deps.getPublicProfileFn(pin).catch(() => null);
+        if (prof?.ok) members.push({ pin, displayName: prof.value.displayName, boxPk: base64ToBytes(prof.value.boxPublicKey) });
+        else if (!prof || (prof.code !== "not_found" && prof.code !== "pin_burned")) still.push(pin); // retry later
+      }
+      const updated: GroupRecord = { ...g, members };
+      if (still.length > 0) updated.unresolved = still;
+      else delete updated.unresolved;
+      await deps.repos.groupRepo.put(updated);
+      deps.groups.upsert(updated);
+      return updated;
+    },
+
+    /** Finishes key lookups an earlier session did not complete (call once at startup). */
+    async resolvePending(ownPins: readonly string[]): Promise<void> {
+      for (const own of ownPins) {
+        for (const g of await deps.repos.groupRepo.listForPin(own)) {
+          if (g.unresolved?.length) await api.resolve(own, g.groupId).catch(() => null);
+        }
+      }
+    },
+
     /** Public key of a group-mate who is not a Contact, so their group messages can be opened. */
     async senderKey(ownPin: string, from: string): Promise<Uint8Array | null> {
       for (const g of await deps.repos.groupRepo.listForPin(ownPin)) {
         const m = g.members.find((x) => x.pin === from);
         if (m) return m.boxPk;
+        if (g.unresolved?.includes(from)) {
+          const r = await api.resolve(ownPin, g.groupId);
+          const found = r?.members.find((x) => x.pin === from);
+          if (found) return found.boxPk;
+        }
       }
       return null;
     },
@@ -170,21 +216,21 @@ export function createGroupFlow(deps: GroupFlowDeps) {
         if (!creator || creator.unavailable || existing) return null;
         if (!p.members.includes(ownPin) || !p.members.includes(from)) return null;
         const members: GroupMember[] = [];
+        const unresolved: string[] = [];
         for (const pin of p.members) {
           if (pin === ownPin) continue;
           const c = await deps.repos.contactRepo.get(ownPin, pin);
-          if (c && !c.unavailable) {
-            members.push({ pin, displayName: c.displayName, boxPk: c.boxPk });
-            continue;
-          }
-          // Keys of members you do not know come from the Directory, never from the creator.
-          const prof = await deps.getPublicProfileFn(pin).catch(() => null);
-          if (prof?.ok) members.push({ pin, displayName: prof.value.displayName, boxPk: base64ToBytes(prof.value.boxPublicKey) });
+          if (c && !c.unavailable) members.push({ pin, displayName: c.displayName, boxPk: c.boxPk });
+          else unresolved.push(pin);
         }
+        // Saved before any network call; the remaining keys are filled in right after.
         const group: GroupRecord = { ownPin, groupId: p.g, name: p.name, members, createdBy: from, createdAt: now() };
+        if (unresolved.length > 0) group.unresolved = unresolved;
         await deps.repos.groupRepo.put(group);
         deps.groups.upsert(group);
-        return note(ownPin, p.g, `${creator.displayName} added you to ${p.name}.`);
+        const saved = await note(ownPin, p.g, `${creator.displayName} added you to ${p.name}.`);
+        await api.resolve(ownPin, p.g);
+        return saved;
       }
       const member = existing?.members.find((m) => m.pin === from);
       if (!existing || !member) return null;

@@ -61,6 +61,7 @@ async function setup(over: Partial<GroupFlowDeps> = {}) {
     createGroupFn: vi.fn(async () => ({ ok: true as const, value: { groupId: G, members: [A, B] } })),
     leaveGroupFn: vi.fn(async () => ({ ok: true as const, value: { left: true } })),
     getPublicProfileFn,
+    sleep: async () => {},
     ...over,
   };
   return { store, flow: createGroupFlow(deps), frames, chat, deps, getPublicProfileFn };
@@ -145,5 +146,24 @@ describe("group flow", () => {
     const ok = await t.flow.create(A, "Trip", [B]);
     expect(ok.ok).toBe(true);
     expect(JSON.parse(t.frames[0]!).envelopes).toHaveLength(1);
+  });
+
+  it("saves the group before looking up unknown members, and finishes the lookup later", async () => {
+    let up = false;
+    const t = await setup({
+      getPublicProfileFn: async (pin: string) =>
+        up
+          ? { ok: true as const, value: { pin, boxPublicKey: bytesToBase64(keys.C!.box.publicKey), signPublicKey: "", displayName: "Cy", personalMessage: "" } }
+          : { ok: false as const, code: "verification_unavailable" },
+    });
+    expect(await t.flow.receive(A, B, "m0", { t: "create", g: G, name: "Trip", members: [B, A, C] })).not.toBeNull();
+    const pending = await t.store.groupRepo.get(A, G);
+    expect(pending?.members.map((m) => m.pin)).toEqual([B]);
+    expect(pending?.unresolved).toEqual([C]);
+    up = true;
+    await t.flow.resolvePending([A]);
+    const done = await t.store.groupRepo.get(A, G);
+    expect(done?.members.map((m) => m.pin).sort()).toEqual([B, C]);
+    expect(done?.unresolved).toBeUndefined();
   });
 });
