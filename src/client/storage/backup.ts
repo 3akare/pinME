@@ -2,6 +2,7 @@ import { base64ToBytes, bytesToBase64 } from "../../shared/base64";
 import type { LocalStore } from "./index";
 import type {
   ContactRecord,
+  GroupRecord,
   IdentityRecord,
   InviteRecord,
   MessageRecord,
@@ -17,6 +18,8 @@ export interface Snapshot {
   contacts: ContactRecord[];
   invites: InviteRecord[];
   pendingContacts: PendingContactRecord[];
+  /** Absent in backups made before groups existed. */
+  groups?: GroupRecord[];
   messages: MessageRecord[];
 }
 
@@ -58,6 +61,7 @@ export async function exportSnapshot(store: LocalStore): Promise<Uint8Array> {
     contacts: await db.getAll("contacts"),
     invites: await db.getAll("invites"),
     pendingContacts: await db.getAll("pendingContacts"),
+    groups: await db.getAll("groups"),
     messages: await db.getAll("messages"),
   };
   return new TextEncoder().encode(JSON.stringify(await encode(snapshot)));
@@ -76,6 +80,7 @@ export function parseSnapshot(bytes: Uint8Array): Snapshot | null {
   const s = raw as Partial<Snapshot> | null;
   if (!s || s.version !== 1 || typeof s.identity?.displayName !== "string") return null;
   if (![s.pins, s.contacts, s.invites, s.pendingContacts, s.messages].every(isArr)) return null;
+  if (s.groups !== undefined && !isArr(s.groups)) return null;
   const pinOk = (p: PinRecord) =>
     typeof p.pin === "string" && p.boxSk instanceof Uint8Array && p.signSk instanceof Uint8Array && typeof p.label === "string";
   if (!(s.pins as PinRecord[]).every(pinOk)) return null;
@@ -88,12 +93,13 @@ export function parseSnapshot(bytes: Uint8Array): Snapshot | null {
  */
 export async function importSnapshot(store: LocalStore, s: Snapshot): Promise<"restored" | "has_identity"> {
   if (await store.identityRepo.get()) return "has_identity";
-  await store.transaction(["identity", "pins", "contacts", "invites", "pendingContacts", "messages"], async (repos, tx) => {
+  await store.transaction(["identity", "pins", "contacts", "invites", "pendingContacts", "groups", "messages"], async (repos, tx) => {
     await repos.identityRepo.put(s.identity);
     for (const p of s.pins) await repos.pinRepo.put(p);
     for (const c of s.contacts) await repos.contactRepo.put(c);
     for (const i of s.invites) await repos.inviteRepo.put(i);
     for (const p of s.pendingContacts) await repos.pendingContactRepo.put(p);
+    for (const g of s.groups ?? []) await repos.groupRepo.put(g);
     const messages = tx.objectStore("messages");
     for (const m of s.messages) await messages.put(m);
   });

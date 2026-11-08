@@ -50,6 +50,10 @@ function node(pin: string, deps: Partial<PinMailboxDeps>, online: boolean, accep
         if (accepted === "down") throw new Error("down");
         return accepted;
       },
+      mayRelay: async () => {
+        if (accepted === "down") throw new Error("down");
+        return accepted;
+      },
       lookupPin: async () => ({ state: "active" }),
     }) as never;
   const mailbox = new PinMailbox(realState!, env as never, { now: () => clock.t, directory, ...deps });

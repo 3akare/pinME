@@ -1,6 +1,10 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
 import { createBackupFile, downloadFile, MIN_PASSPHRASE } from "../../client/app/backup";
+import { groupActions } from "../../client/app/bootstrap";
+import { useContactsStore } from "../../client/state/contacts";
+import { GROUP_NAME_MAX, MAX_GROUP_MEMBERS } from "../../shared/limits";
+import { Avatar } from "../ui/Avatar";
 import { usePinsStore } from "../../client/state/pins";
 import { PIN_FORMAT_MESSAGE } from "../../client/invites/messages";
 import { parseInvite } from "../../shared/scan";
@@ -181,6 +185,111 @@ export function BackupSheet({ onClose }: { onClose: () => void }) {
         ) : null}
         <button type="submit" disabled={busy} aria-busy={busy || undefined} className="btn btn--primary self-start">
           {busy ? "Encrypting…" : "Download backup"}
+        </button>
+      </form>
+    </Modal>
+  );
+}
+
+/** Pick contacts of the current PIN and a name; everyone picked is in the group at once. */
+export function NewGroupSheet({ onClose }: { onClose: () => void }) {
+  const navigate = useNavigate();
+  const activePin = usePinsStore((s) => s.activePin);
+  const contacts = useContactsStore((s) => s.contacts);
+  const mine = useMemo(
+    () => contacts.filter((c) => c.ownPin === activePin && !c.unavailable).sort((a, b) => a.displayName.localeCompare(b.displayName)),
+    [contacts, activePin],
+  );
+  const [name, setName] = useState("");
+  const [picked, setPicked] = useState<ReadonlySet<string>>(new Set());
+  const [error, setError] = useState<string | undefined>();
+  const [busy, setBusy] = useState(false);
+  const max = MAX_GROUP_MEMBERS - 1;
+
+  function toggle(pin: string) {
+    setPicked((prev) => {
+      const next = new Set(prev);
+      if (next.has(pin)) next.delete(pin);
+      else if (next.size < max) next.add(pin);
+      return next;
+    });
+  }
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (busy || !activePin) return;
+    if (!name.trim()) return setError("Give the group a name.");
+    if (picked.size === 0) return setError("Pick at least one contact.");
+    setBusy(true);
+    setError(undefined);
+    const res = await (await groupActions()).create(activePin, name, [...picked]);
+    if (res.ok) {
+      onClose();
+      void navigate({ to: "/g/$groupId", params: { groupId: res.group.groupId } });
+      return;
+    }
+    setBusy(false);
+    setError(
+      res.code === "disconnected"
+        ? "You are offline. Try again when connected."
+        : res.code === "not_a_contact"
+          ? "Someone picked is no longer a contact."
+          : "Could not make the group. Try again.",
+    );
+  }
+
+  return (
+    <Modal variant="sheet" labelledBy="group-title" onDismiss={busy ? undefined : onClose}>
+      <SheetHead id="group-title" title="New group" onClose={onClose} />
+      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-3">
+        <label htmlFor="group-name" className="text-sm font-medium text-ink-2">
+          Group name
+        </label>
+        <input
+          id="group-name"
+          value={name}
+          maxLength={GROUP_NAME_MAX}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Weekend trip"
+          className="field"
+        />
+        <fieldset className="mt-2">
+          <legend className="mb-2 flex w-full justify-between text-sm font-medium text-ink-2">
+            <span>Members</span>
+            <span className="text-muted [font-variant-numeric:lining-nums_tabular-nums]">
+              {picked.size} of {max}
+            </span>
+          </legend>
+          {mine.length === 0 ? (
+            <p className="text-sm text-muted">Add contacts first; a group is made from people you already chat with.</p>
+          ) : (
+            <ul className="max-h-64 overflow-y-auto border-t border-rule pane-scroll">
+              {mine.map((c) => (
+                <li key={c.contactPin} className="border-b border-rule">
+                  <label className="flex cursor-pointer items-center gap-3 px-1 py-2.5">
+                    <input
+                      type="checkbox"
+                      checked={picked.has(c.contactPin)}
+                      onChange={() => toggle(c.contactPin)}
+                      disabled={!picked.has(c.contactPin) && picked.size >= max}
+                      className="h-4 w-4 accent-accent focus-visible:outline-2 focus-visible:outline-focus"
+                    />
+                    <Avatar name={c.displayName} picture={c.picture} size={32} />
+                    <span className="truncate text-ink">{c.displayName}</span>
+                  </label>
+                </li>
+              ))}
+            </ul>
+          )}
+        </fieldset>
+        <p role="alert" aria-live="assertive" className="min-h-5 text-sm text-error">
+          {error}
+        </p>
+        <p className="text-sm text-muted">
+          Members can message each other here even if they are not contacts. Names and messages stay encrypted.
+        </p>
+        <button type="submit" disabled={busy || mine.length === 0} aria-busy={busy || undefined} className="btn btn--primary self-start">
+          {busy ? "Making…" : "Make group"}
         </button>
       </form>
     </Modal>

@@ -8,6 +8,8 @@ export const SIGNED_ACTIONS = [
   "sendInvite",
   "respondInvite",
   "registerPush",
+  "createGroup",
+  "leaveGroup",
 ] as const;
 
 export const SignedActionSchema = z.enum(SIGNED_ACTIONS);

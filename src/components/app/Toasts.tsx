@@ -37,7 +37,9 @@ function ToastItem({ toast }: { toast: Toast }) {
   function openChat() {
     if (!toast.chat) return;
     usePinsStore.getState().setActivePin(toast.chat.ownPin);
-    void navigate({ to: "/chat/$pin", params: { pin: toast.chat.contactPin } });
+    const target = toast.chat.contactPin;
+    if (target.startsWith("g:")) void navigate({ to: "/g/$groupId", params: { groupId: target.slice(2) } });
+    else void navigate({ to: "/chat/$pin", params: { pin: target } });
     dismiss(toast.id);
   }
 

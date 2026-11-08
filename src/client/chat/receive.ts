@@ -1,5 +1,6 @@
 import { base64ToBytes } from "../../shared/base64";
 import { EnvelopeSchema } from "../../shared/protocol";
+import { decodeGroupPayload, isGroupText, type GroupPayload } from "../groups/payload";
 import type { MessageRecord, Repositories } from "../storage";
 import type { ChatSink } from "./send";
 
@@ -15,6 +16,11 @@ export interface ReceiveDeps {
   now?: () => number;
   /** Hook invoked after the message is persisted and in the store (task 9.2 sends receipts from it). */
   onSaved?: (message: MessageRecord) => void;
+  /** Group chats: keys of group-mates who are not Contacts, and handling of group payloads. */
+  groups?: {
+    senderKey(ownPin: string, from: string): Promise<Uint8Array | null>;
+    receive(ownPin: string, from: string, messageId: string, payload: GroupPayload): Promise<MessageRecord | null>;
+  };
 }
 
 /**
@@ -35,13 +41,23 @@ export async function receiveMessage(
       deps.repos.pinRepo.get(ownPin),
       deps.repos.contactRepo.get(ownPin, frame.from),
     ]);
-    if (!pin || !contact) return null;
+    if (!pin) return null;
+    // A group-mate who is not a Contact can only send group messages.
+    const senderKey = contact?.boxPk ?? (await deps.groups?.senderKey(ownPin, frame.from)) ?? null;
+    if (!senderKey) return null;
     const text = deps.decrypt(
       { nonce: base64ToBytes(env.nonce), ciphertext: base64ToBytes(env.ciphertext) },
-      contact.boxPk,
+      senderKey,
       pin.boxSk,
     );
     if (text === null) return null;
+    if (isGroupText(text)) {
+      const payload = decodeGroupPayload(text);
+      const saved = payload && deps.groups ? await deps.groups.receive(ownPin, frame.from, env.messageId, payload) : null;
+      if (saved) deps.onSaved?.(saved);
+      return saved;
+    }
+    if (!contact) return null;
     const existing = await deps.repos.messageRepo.get(ownPin, frame.from, env.messageId);
     if (existing) return null; // duplicate delivery
     const message: MessageRecord = {

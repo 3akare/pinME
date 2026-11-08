@@ -9,6 +9,7 @@ const PATHS = {
   pins: "M7 4h10v4l-2 3v5l-3 4-3-4v-5L7 8z",
   broadcast: "M4 10v4h3l5 4V6L7 10zM16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11",
   check: "M5 12l5 5 9-10",
+  group: "M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 19a6 6 0 0 1 12 0M16 11a3 3 0 1 0 0-6M17 13.5a5.5 5.5 0 0 1 4 5.5",
   bell: "M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20a2 2 0 0 0 4 0",
   install: "M12 4v11M7 10l5 5 5-5M5 20h14",
 } as const;

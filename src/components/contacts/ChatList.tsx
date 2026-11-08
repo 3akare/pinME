@@ -4,9 +4,10 @@ import { getLocalStore, getSession } from "../../client/app/bootstrap";
 import { conversationKey, hydrateConversation, useChatStore } from "../../client/state/chat";
 import { useConnectionStatus } from "../../client/state/connection";
 import { useContactsStore } from "../../client/state/contacts";
+import { useGroupsStore } from "../../client/state/groups";
 import { useIdentityStore } from "../../client/state/identity";
 import { usePinsStore } from "../../client/state/pins";
-import type { MessageRecord } from "../../client/storage";
+import { groupKey, type MessageRecord } from "../../client/storage";
 import { InstallItem, NotificationsItem } from "../app/AppMenuItems";
 import { InviteRow } from "../invites/InviteRow";
 import { useInviteResponder } from "../invites/useInviteResponder";
@@ -14,6 +15,7 @@ import { PinShareCard } from "../pins/PinShareCard";
 import { Avatar } from "../ui/Avatar";
 import { Icon } from "../ui/Icon";
 import { ContactRow } from "./ContactRow";
+import { GroupRow } from "./GroupRow";
 
 export interface ChatListProps {
   /** Contact PIN of the chat open beside the list, if any. */
@@ -21,10 +23,11 @@ export interface ChatListProps {
   onScan: () => void;
   onMyCode: () => void;
   onBackup: () => void;
+  onNewGroup: () => void;
 }
 
 /** The left pane: who you are, how to connect, requests, and every chat of the active PIN. */
-export function ChatList({ selected, onScan, onMyCode, onBackup }: ChatListProps) {
+export function ChatList({ selected, onScan, onMyCode, onBackup, onNewGroup }: ChatListProps) {
   const navigate = useNavigate();
   const identity = useIdentityStore((s) => s.identity);
   const pins = usePinsStore((s) => s.pins);
@@ -38,26 +41,40 @@ export function ChatList({ selected, onScan, onMyCode, onBackup }: ChatListProps
   const activePins = pins.filter((p) => p.status === "active");
 
   const mine = useMemo(() => contacts.filter((c) => c.ownPin === activePin), [contacts, activePin]);
+  const allGroups = useGroupsStore((s) => s.groups);
+  const myGroups = useMemo(() => allGroups.filter((g) => g.ownPin === activePin), [allGroups, activePin]);
 
   // Load each conversation once so rows can show the last message and the unread count.
   useEffect(() => {
     if (!activePin) return;
     void getLocalStore().then((store) =>
-      Promise.all(mine.map((c) => hydrateConversation(store, activePin, c.contactPin))).catch(() => {}),
+      Promise.all([
+        ...mine.map((c) => hydrateConversation(store, activePin, c.contactPin)),
+        ...myGroups.map((g) => hydrateConversation(store, activePin, groupKey(g.groupId))),
+      ]).catch(() => {}),
     );
     // Only when the set of chats changes, not on every message.
-  }, [activePin, mine.length]);
+  }, [activePin, mine.length, myGroups.length]);
 
-  const rows = useMemo(() => {
-    return mine
-      .map((c) => {
-        const list: MessageRecord[] = messages[conversationKey(c.ownPin, c.contactPin)] ?? [];
-        const last = list[list.length - 1];
-        const unread = list.filter((m) => m.direction === "in" && m.ts > (c.lastReadAt ?? 0)).length;
-        return { c, last, unread };
-      })
-      .sort((a, b) => (b.last?.ts ?? 0) - (a.last?.ts ?? 0) || a.c.displayName.localeCompare(b.c.displayName));
-  }, [mine, messages]);
+  type Row =
+    | { kind: "contact"; id: string; name: string; c: (typeof mine)[number]; last?: MessageRecord; unread: number }
+    | { kind: "group"; id: string; name: string; g: (typeof myGroups)[number]; last?: MessageRecord; unread: number };
+  const rows = useMemo<Row[]>(() => {
+    const tail = (key: string, since = 0) => {
+      const list: MessageRecord[] = messages[key] ?? [];
+      return { last: list[list.length - 1], unread: list.filter((m) => m.direction === "in" && m.kind !== "system" && m.ts > since).length };
+    };
+    return [
+      ...mine.map((c): Row => ({ kind: "contact", id: c.contactPin, name: c.displayName, c, ...tail(conversationKey(c.ownPin, c.contactPin), c.lastReadAt) })),
+      ...myGroups.map((g): Row => ({
+        kind: "group",
+        id: groupKey(g.groupId),
+        name: g.name,
+        g,
+        ...tail(conversationKey(g.ownPin, groupKey(g.groupId)), g.lastReadAt),
+      })),
+    ].sort((a, b) => (b.last?.ts ?? (b.kind === "group" ? b.g.createdAt : 0)) - (a.last?.ts ?? (a.kind === "group" ? a.g.createdAt : 0)) || a.name.localeCompare(b.name));
+  }, [mine, myGroups, messages]);
 
   const sortedInvites = useMemo(() => [...invites].sort((a, b) => a.createdAt - b.createdAt), [invites]);
   const labelOf = (pin: string) => (activePins.length > 1 ? pins.find((p) => p.pin === pin)?.label : undefined);
@@ -103,7 +120,7 @@ export function ChatList({ selected, onScan, onMyCode, onBackup }: ChatListProps
         <button type="button" onClick={onMyCode} aria-label="My code" title="My code" className="icon-btn">
           <Icon name="qr" />
         </button>
-        <MoreMenu onBackup={onBackup} />
+        <MoreMenu onBackup={onBackup} onNewGroup={onNewGroup} />
       </header>
 
       {status !== "connected" && activePin ? (
@@ -146,15 +163,25 @@ export function ChatList({ selected, onScan, onMyCode, onBackup }: ChatListProps
           </section>
         ) : (
           <ul aria-label="Chats" className="flex flex-col">
-            {rows.map(({ c, last, unread }) => (
-              <li key={c.contactPin}>
-                <ContactRow
-                  contact={c}
-                  last={last}
-                  unread={unread}
-                  selected={selected === c.contactPin}
-                  onOpen={(pin) => openChat(c.ownPin, pin)}
-                />
+            {rows.map((r) => (
+              <li key={r.id}>
+                {r.kind === "contact" ? (
+                  <ContactRow
+                    contact={r.c}
+                    last={r.last}
+                    unread={r.unread}
+                    selected={selected === r.id}
+                    onOpen={(pin) => openChat(r.c.ownPin, pin)}
+                  />
+                ) : (
+                  <GroupRow
+                    group={r.g}
+                    last={r.last}
+                    unread={r.unread}
+                    selected={selected === r.id}
+                    onOpen={(groupId) => void navigate({ to: "/g/$groupId", params: { groupId } })}
+                  />
+                )}
               </li>
             ))}
           </ul>
@@ -165,7 +192,7 @@ export function ChatList({ selected, onScan, onMyCode, onBackup }: ChatListProps
 }
 
 /** Less frequent destinations behind one button. */
-function MoreMenu({ onBackup }: { onBackup: () => void }) {
+function MoreMenu({ onBackup, onNewGroup }: { onBackup: () => void; onNewGroup: () => void }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -202,6 +229,16 @@ function MoreMenu({ onBackup }: { onBackup: () => void }) {
           <Link to="/pins" className={item}>
             <Icon name="pins" /> My PINs
           </Link>
+          <button
+            type="button"
+            className={`${item} w-full text-left`}
+            onClick={() => {
+              setOpen(false);
+              onNewGroup();
+            }}
+          >
+            <Icon name="group" /> New group
+          </button>
           <Link to="/broadcast" className={item}>
             <Icon name="broadcast" /> Broadcast
           </Link>

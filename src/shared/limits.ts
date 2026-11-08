@@ -23,3 +23,9 @@ export const PERSONAL_MESSAGE_MAX = 80;
 
 export const NONCE_BYTES = 24;
 export const CHALLENGE_BYTES = 32;
+
+/** Group size including the creator. Each group message is one envelope per other member, and every
+ * envelope counts against the 30-per-10-s relay limit, so this keeps several messages per window. */
+export const MAX_GROUP_MEMBERS = 10;
+/** Group name length. */
+export const GROUP_NAME_MAX = 40;

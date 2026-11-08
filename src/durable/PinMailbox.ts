@@ -64,6 +64,8 @@ function pushFromEnv(env: MailboxEnv): PinMailboxDeps["push"] {
 export class PinMailbox extends DurableObject<MailboxEnv> {
   private readonly deps: PinMailboxDeps;
   private readonly pairCache = new PairCache();
+  /** Messages and receipts: contacts, or members of a shared group. */
+  private readonly relayCache = new PairCache();
 
   constructor(ctx: DurableObjectState, env: MailboxEnv, deps?: Partial<PinMailboxDeps>) {
     super(ctx, env);
@@ -169,7 +171,7 @@ export class PinMailbox extends DurableObject<MailboxEnv> {
   /** Sender-side receipt relay (Req 8.7, 8.8): non-contacts are discarded silently. */
   private async onReceipt(att: SocketAttachment, kind: ReceiptKind, to: string, messageId: string): Promise<void> {
     const directory = this.deps.directory();
-    const verdict = await this.pairCache.check(to, this.deps.now(), (other) => directory.isContactPair(att.pin, other));
+    const verdict = await this.relayCache.check(to, this.deps.now(), (other) => directory.mayRelay(att.pin, other));
     if (!verdict.ok) return;
     try {
       await this.deps.mailbox(to).deliverReceipt({ from: att.pin, kind, messageId });
@@ -267,7 +269,7 @@ export class PinMailbox extends DurableObject<MailboxEnv> {
     const myPin = await this.ctx.storage.get<string>(META_PIN);
     if (!myPin) return { ok: false };
     const directory = this.deps.directory();
-    const verdict = await this.pairCache.check(item.from, now, (other) => directory.isContactPair(other, myPin));
+    const verdict = await this.relayCache.check(item.from, now, (other) => directory.mayRelay(other, myPin));
     if (!verdict.ok) return { ok: false };
     if (this.sendToAuthenticated(JSON.stringify(receiptFrame(item)))) return { ok: true };
     await storeReceipt(this.ctx.storage, { ...item, storedAt: now }, crypto.randomUUID());
@@ -329,7 +331,7 @@ export class PinMailbox extends DurableObject<MailboxEnv> {
     // unless the pair is cached, and the recipient mailbox rejects burned state itself.
     const record = await directory.lookupPin(envelope.to).catch(() => null);
     if (record?.state === "burned") return { ok: false, error: "pin_burned" };
-    const verdict = await this.pairCache.check(envelope.to, now, (other) => directory.isContactPair(att.pin, other));
+    const verdict = await this.relayCache.check(envelope.to, now, (other) => directory.mayRelay(att.pin, other));
     return verdict.ok ? { ok: true } : { ok: false, error: verdict.error };
   }
 
@@ -373,7 +375,7 @@ export class PinMailbox extends DurableObject<MailboxEnv> {
     const myPin = await this.ctx.storage.get<string>(META_PIN);
     if (!myPin) return { ok: false, error: "pin_unavailable" };
     const directory = this.deps.directory();
-    const verdict = await this.pairCache.check(item.from, now, (other) => directory.isContactPair(other, myPin));
+    const verdict = await this.relayCache.check(item.from, now, (other) => directory.mayRelay(other, myPin));
     if (!verdict.ok) return { ok: false, error: verdict.error };
     const frame = JSON.stringify({ type: "message", from: item.from, envelope });
     let delivered = false;
@@ -514,6 +516,7 @@ export class PinMailbox extends DurableObject<MailboxEnv> {
       }
     }
     this.pairCache.invalidate();
+    this.relayCache.invalidate();
     await wipeMailbox(this.ctx.storage);
     return { ok: true };
   }
@@ -525,6 +528,7 @@ export class PinMailbox extends DurableObject<MailboxEnv> {
   async contactBurned(pin: string): Promise<{ delivered: boolean }> {
     if (!PinSchema.safeParse(pin).success) throw new Error("invalid_notice");
     this.pairCache.invalidate();
+    this.relayCache.invalidate();
     if (await isBurned(this.ctx.storage)) return { delivered: false };
     const delivered = this.sendToAuthenticated(JSON.stringify({ type: "contactBurned", pin }));
     if (!delivered) await holdContactBurned(this.ctx.storage, pin, this.deps.now(), crypto.randomUUID());
@@ -571,6 +575,7 @@ export class PinMailbox extends DurableObject<MailboxEnv> {
   /** RPC: the contact set changed, so cached pair verdicts must not be reused. */
   invalidatePairs(): void {
     this.pairCache.invalidate();
+    this.relayCache.invalidate();
   }
 
   private async flushHeldNotices(ws: WebSocket): Promise<void> {

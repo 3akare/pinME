@@ -17,6 +17,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PinsRouteImport } from './routes/pins'
 import { Route as RestoreRouteImport } from './routes/restore'
 import { Route as ChatPinRouteImport } from './routes/chat.$pin'
+import { Route as GGroupIdRouteImport } from './routes/g.$groupId'
 import { Route as IPinRouteImport } from './routes/i.$pin'
 
 const IndexRoute = IndexRouteImport.update({
@@ -59,6 +60,11 @@ const ChatPinRoute = ChatPinRouteImport.update({
   path: '/chat/$pin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GGroupIdRoute = GGroupIdRouteImport.update({
+  id: '/g/$groupId',
+  path: '/g/$groupId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IPinRoute = IPinRouteImport.update({
   id: '/i/$pin',
   path: '/i/$pin',
@@ -74,6 +80,7 @@ export interface FileRoutesByFullPath {
   '/pins': typeof PinsRoute
   '/restore': typeof RestoreRoute
   '/chat/$pin': typeof ChatPinRoute
+  '/g/$groupId': typeof GGroupIdRoute
   '/i/$pin': typeof IPinRoute
 }
 export interface FileRoutesByTo {
@@ -85,6 +92,7 @@ export interface FileRoutesByTo {
   '/pins': typeof PinsRoute
   '/restore': typeof RestoreRoute
   '/chat/$pin': typeof ChatPinRoute
+  '/g/$groupId': typeof GGroupIdRoute
   '/i/$pin': typeof IPinRoute
 }
 export interface FileRoutesById {
@@ -97,6 +105,7 @@ export interface FileRoutesById {
   '/pins': typeof PinsRoute
   '/restore': typeof RestoreRoute
   '/chat/$pin': typeof ChatPinRoute
+  '/g/$groupId': typeof GGroupIdRoute
   '/i/$pin': typeof IPinRoute
 }
 export interface FileRouteTypes {
@@ -110,6 +119,7 @@ export interface FileRouteTypes {
     | '/pins'
     | '/restore'
     | '/chat/$pin'
+    | '/g/$groupId'
     | '/i/$pin'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -121,6 +131,7 @@ export interface FileRouteTypes {
     | '/pins'
     | '/restore'
     | '/chat/$pin'
+    | '/g/$groupId'
     | '/i/$pin'
   id:
     | '__root__'
@@ -132,6 +143,7 @@ export interface FileRouteTypes {
     | '/pins'
     | '/restore'
     | '/chat/$pin'
+    | '/g/$groupId'
     | '/i/$pin'
   fileRoutesById: FileRoutesById
 }
@@ -144,6 +156,7 @@ export interface RootRouteChildren {
   PinsRoute: typeof PinsRoute
   RestoreRoute: typeof RestoreRoute
   ChatPinRoute: typeof ChatPinRoute
+  GGroupIdRoute: typeof GGroupIdRoute
   IPinRoute: typeof IPinRoute
 }
 
@@ -205,6 +218,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatPinRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/g/$groupId': {
+      id: '/g/$groupId'
+      path: '/g/$groupId'
+      fullPath: '/g/$groupId'
+      preLoaderRoute: typeof GGroupIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/i/$pin': {
       id: '/i/$pin'
       path: '/i/$pin'
@@ -224,6 +244,7 @@ const rootRouteChildren: RootRouteChildren = {
   PinsRoute: PinsRoute,
   RestoreRoute: RestoreRoute,
   ChatPinRoute: ChatPinRoute,
+  GGroupIdRoute: GGroupIdRoute,
   IPinRoute: IPinRoute,
 }
 export const routeTree = rootRouteImport

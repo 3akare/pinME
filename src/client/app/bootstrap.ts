@@ -1,4 +1,6 @@
 import { createInviteFlow, type InviteFlow, type InviteFlowDeps } from "../invites/flow";
+import { createGroupFlow, type GroupFlow, type GroupFlowDeps } from "../groups/flow";
+import { hydrateGroups, useGroupsStore } from "../state/groups";
 import { connectTo, type ConnectOutcome } from "../invites/connect";
 import { ensureInviteTokens, resetInviteToken } from "../invites/token";
 import { ready, randomBytes, signRequest, decrypt, encrypt } from "../crypto";
@@ -19,10 +21,11 @@ import { useContactsStore, hydrateContacts } from "../state/contacts";
 import { useIdentityStore } from "../state/identity";
 import { usePinsStore } from "../state/pins";
 import { useToastStore } from "../state/toasts";
-import { openLocalStore, type ContactRecord, type LocalStore, type MessageRecord } from "../storage";
+import { groupKey, isGroupKey, openLocalStore, type ContactRecord, type LocalStore, type MessageRecord } from "../storage";
 import type { InviteTarget } from "../../shared/scan";
 import { getPublicProfileFn } from "../../server/functions/pins";
 import { respondInviteFn, sendInviteFn } from "../../server/functions/invites";
+import { createGroupFn, leaveGroupFn } from "../../server/functions/groups";
 
 let storePromise: Promise<LocalStore> | null = null;
 /** Shared Local_Store connection for the app. */
@@ -71,6 +74,32 @@ export async function buildInviteFlow(
   return createFlow(store, { navigate });
 }
 
+let groupFlow: GroupFlow | null = null;
+/** One group flow for the app, sending on whichever own PIN's session a group belongs to. */
+function getGroupFlow(store: LocalStore): GroupFlow {
+  groupFlow ??= createGroupFlow({
+    repos: store,
+    chat: useChatStore.getState(),
+    groups: useGroupsStore.getState(),
+    encrypt,
+    send: (ownPin, d) => getSession(ownPin)?.send(d) ?? false,
+    isConnected,
+    signRequest: (fields, sk) => signRequest(fields, sk),
+    randomBytes,
+    createGroupFn: (req) => createGroupFn({ data: req }) as ReturnType<GroupFlowDeps["createGroupFn"]>,
+    leaveGroupFn: (req) => leaveGroupFn({ data: req }) as ReturnType<GroupFlowDeps["leaveGroupFn"]>,
+    getPublicProfileFn: (pin) =>
+      getPublicProfileFn({ data: { pin } }) as ReturnType<GroupFlowDeps["getPublicProfileFn"]>,
+  });
+  return groupFlow;
+}
+
+/** Group actions for the UI. */
+export async function groupActions(): Promise<GroupFlow> {
+  const [store] = await Promise.all([getLocalStore(), ready()]);
+  return getGroupFlow(store);
+}
+
 /** Connects the active PIN to a scanned or linked PIN; see `connectTo`. */
 export async function connectToTarget(ownPin: string, target: InviteTarget): Promise<ConnectOutcome> {
   const [store] = await Promise.all([getLocalStore(), ready()]);
@@ -104,12 +133,19 @@ function announceContact(c: ContactRecord, what: string): void {
 /** A message arrived for a chat that is not on screen: one toast per conversation. */
 function announceMessage(m: MessageRecord): void {
   if (m.direction !== "in" || isChatVisible(m.ownPin, m.contactPin)) return;
-  const contact = useContactsStore
-    .getState()
-    .contacts.find((c) => c.ownPin === m.ownPin && c.contactPin === m.contactPin);
   const preview = m.text.length > 80 ? `${m.text.slice(0, 80)}…` : m.text;
+  let title: string;
+  if (isGroupKey(m.contactPin)) {
+    const group = useGroupsStore.getState().groups.find((g) => g.ownPin === m.ownPin && groupKey(g.groupId) === m.contactPin);
+    const who = group?.members.find((x) => x.pin === m.sender)?.displayName;
+    title = who ? `${who} in ${group?.name ?? "a group"}` : (group?.name ?? "Group");
+  } else {
+    title =
+      useContactsStore.getState().contacts.find((c) => c.ownPin === m.ownPin && c.contactPin === m.contactPin)?.displayName ??
+      m.contactPin;
+  }
   useToastStore.getState().push({
-    text: `${contact?.displayName ?? m.contactPin}: ${preview}`,
+    text: `${title}: ${preview}`,
     chat: { ownPin: m.ownPin, contactPin: m.contactPin },
     key: `msg:${m.ownPin}:${m.contactPin}`,
   });
@@ -125,13 +161,21 @@ function wireSession(pin: string, session: Session, store: LocalStore): () => vo
   const contacts = useContactsStore.getState();
   const chat = useChatStore.getState();
   const flow = createFlow(store);
+  const groups = getGroupFlow(store);
   const receipts = createReceiptSender({ send: (d) => session.send(d), isChatVisible });
   receiptSenders.set(pin, receipts);
   let retryTimer: ReturnType<typeof setTimeout> | undefined;
 
   const flush = () =>
     void flushPending(
-      { repos: store, store: chat, encrypt, send: (d) => session.send(d), isConnected: () => isConnected(pin) },
+      {
+        repos: store,
+        store: chat,
+        encrypt,
+        send: (d) => session.send(d),
+        isConnected: () => isConnected(pin),
+        transmitGroup: (m) => groups.transmit(m),
+      },
       pin,
     ).catch(() => {});
 
@@ -142,6 +186,8 @@ function wireSession(pin: string, session: Session, store: LocalStore): () => vo
       .find((m) => m.ownPin === pin && m.messageId === messageId && m.direction === "out");
     const saved = msg ?? (await store.db.getAllFromIndex("messages", "byOwnPin", pin)).find((m) => m.messageId === messageId);
     if (!saved || saved.direction !== "out") return;
+    // One member refusing a group message (they left, or burned) does not fail it for the rest.
+    if (saved.kind === "group" && !RETRYABLE.has(code)) return;
     const next: MessageRecord = RETRYABLE.has(code)
       ? { ...saved, pending: true, failed: false }
       : { ...saved, pending: false, failed: true };
@@ -163,6 +209,7 @@ function wireSession(pin: string, session: Session, store: LocalStore): () => vo
       repos: store,
       store: chat,
       decrypt,
+      groups,
       onSaved: (m) => {
         receipts.onSaved(m);
         announceMessage(m);
@@ -213,6 +260,7 @@ export function notifyChatVisible(ownPin: string, contactPin: string): void {
 }
 
 async function markConversationRead(ownPin: string, contactPin: string): Promise<void> {
+  if (isGroupKey(contactPin)) return markGroupRead(ownPin, contactPin);
   const contact = useContactsStore.getState().contacts.find((c) => c.ownPin === ownPin && c.contactPin === contactPin);
   if (!contact) return;
   const list = useChatStore.getState().messages[conversationKey(ownPin, contactPin)] ?? [];
@@ -221,6 +269,17 @@ async function markConversationRead(ownPin: string, contactPin: string): Promise
   const updated: ContactRecord = { ...contact, lastReadAt: latestIn };
   await (await getLocalStore()).contactRepo.put(updated);
   useContactsStore.getState().upsertContact(updated);
+}
+
+async function markGroupRead(ownPin: string, key: string): Promise<void> {
+  const group = useGroupsStore.getState().groups.find((g) => g.ownPin === ownPin && groupKey(g.groupId) === key);
+  if (!group) return;
+  const list = useChatStore.getState().messages[conversationKey(ownPin, key)] ?? [];
+  const latestIn = list.reduce((t, m) => (m.direction === "in" && m.ts > t ? m.ts : t), 0);
+  if (latestIn <= (group.lastReadAt ?? 0)) return;
+  const updated = { ...group, lastReadAt: latestIn };
+  await (await getLocalStore()).groupRepo.put(updated);
+  useGroupsStore.getState().upsert(updated);
 }
 
 /** New QR code and link for a PIN; codes shared before stop connecting automatically. */
@@ -262,6 +321,7 @@ export function bootstrapApp(force = false): Promise<boolean> {
       await ready();
       await ensureInviteTokens({ repos: store, randomBytes, onSaved: (p) => usePinsStore.getState().addPin(p) }, pins);
       await hydrateContacts(store, pins.map((p) => p.pin));
+      await hydrateGroups(store, pins.map((p) => p.pin));
       await startConnections();
       void createFlow(store).resumePendingAccepts().catch(() => {});
       return true;

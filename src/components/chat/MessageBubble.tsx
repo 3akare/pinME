@@ -35,10 +35,12 @@ export interface MessageBubbleProps {
   pending?: boolean;
   /** Refused by the relay for good. */
   failed?: boolean;
+  /** Group messages have no single recipient to report D or R, so they show none. */
+  showMarker?: boolean;
 }
 
 /** Sent bubbles sit right on the lifted paper with time and Delivery_Marker; received sit left. */
-export function MessageBubble({ direction, text, marker, ts, timeText, pending, failed }: MessageBubbleProps) {
+export function MessageBubble({ direction, text, marker, ts, timeText, pending, failed, showMarker = true }: MessageBubbleProps) {
   const sent = direction === "out";
   return (
     <div
@@ -55,7 +57,7 @@ export function MessageBubble({ direction, text, marker, ts, timeText, pending, 
         <span className={`flex items-center gap-1.5 self-end text-xs ${failed ? "text-error" : "text-muted"}`}>
           {failed ? "Not delivered" : pending ? "Waiting for connection" : null}
           {timeText ? <span>{timeText}</span> : ts !== undefined ? <time dateTime={new Date(ts).toISOString()}>{formatTime(ts)}</time> : null}
-          {sent && !failed ? <DeliveryMarker marker={marker ?? "clock"} /> : null}
+          {sent && !failed && showMarker ? <DeliveryMarker marker={marker ?? "clock"} /> : null}
         </span>
       </div>
     </div>

@@ -68,3 +68,22 @@ export const usedNonces = pgTable(
   },
   (t) => [primaryKey({ columns: [t.pin, t.nonce] })],
 );
+
+// Group chats (stretch). Membership lets members relay to each other without being contacts.
+export const groups = pgTable("groups", {
+  id: uuid("id").primaryKey(),
+  createdBy: char("created_by", { length: 8 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const groupMembers = pgTable(
+  "group_members",
+  {
+    groupId: uuid("group_id")
+      .notNull()
+      .references(() => groups.id, { onDelete: "cascade" }),
+    pin: char("pin", { length: 8 }).notNull(),
+    joinedAt: timestamp("joined_at").defaultNow().notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.groupId, t.pin] })],
+);

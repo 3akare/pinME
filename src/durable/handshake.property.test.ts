@@ -18,6 +18,10 @@ function spyDirectory() {
       calls.push(`${a}:${b}`);
       throw new Error("directory must not be consulted");
     },
+    async mayRelay(a: string, b: string) {
+      calls.push(`${a}:${b}`);
+      throw new Error("directory must not be consulted");
+    },
   } as unknown as DirectoryClient;
   return { directory, calls };
 }

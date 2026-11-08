@@ -89,7 +89,11 @@ export const FLUSH_BATCH = 20;
  * Messages to contacts that are gone are marked failed. Returns how many were sent.
  */
 export async function flushPending(
-  deps: Omit<SendDeps, "store" | "newMessageId" | "now"> & { store: QueueSink },
+  deps: Omit<SendDeps, "store" | "newMessageId" | "now"> & {
+    store: QueueSink;
+    /** Sends a queued group message to every member. */
+    transmitGroup?: (m: MessageRecord) => Promise<boolean>;
+  },
   ownPin: string,
 ): Promise<number> {
   const pin = await deps.repos.pinRepo.get(ownPin);
@@ -97,6 +101,14 @@ export async function flushPending(
   let sent = 0;
   for (const m of (await deps.repos.messageRepo.listPending(ownPin)).slice(0, FLUSH_BATCH)) {
     if (!deps.isConnected()) break;
+    if (m.kind === "group") {
+      if (!deps.transmitGroup || !(await deps.transmitGroup(m))) break;
+      const done: MessageRecord = { ...m, pending: false };
+      await deps.repos.messageRepo.put(done);
+      deps.store.updateMessage(done);
+      sent++;
+      continue;
+    }
     const contact = await deps.repos.contactRepo.get(ownPin, m.contactPin);
     if (!contact || contact.unavailable) {
       const failed: MessageRecord = { ...m, pending: false, failed: true };

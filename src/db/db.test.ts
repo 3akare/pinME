@@ -32,7 +32,8 @@ describe("schema tables (Req 18.11)", () => {
       .filter((v) => is(v, PgTable))
       .map((v) => getTableConfig(v as PgTable).name)
       .sort();
-    expect(names).toEqual(["burned_pins", "contacts", "invites", "pins", "used_nonces"]);
+    // group_members and groups: the group-chats stretch feature (relay between group-mates).
+    expect(names).toEqual(["burned_pins", "contacts", "group_members", "groups", "invites", "pins", "used_nonces"]);
   });
 });
 

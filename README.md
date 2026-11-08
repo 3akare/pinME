@@ -18,6 +18,7 @@ The server can see:
 - PINs: which PINs exist, which are burned, pending invites and accepted contact pairs between PINs.
 - Ciphertext sizes.
 - Message timing: when envelopes, delivery and read markers, pings and typing events are sent and to whom.
+- Group membership: which PINs are in a group together, so it can relay messages between members who are not contacts. Group names and messages are encrypted; the server cannot tell which group a message belongs to.
 - If you turn on notifications: one push endpoint per PIN (from your browser's push service). Each PIN subscribes from its own service-worker scope, so the endpoints of your PINs differ and are not linked to each other. Pushes are empty wake-ups: the push service and the server see when a PIN is woken, never what arrived.
 
 The server cannot see:

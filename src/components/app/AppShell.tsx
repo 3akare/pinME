@@ -3,21 +3,24 @@ import { useShakeStore } from "../../client/net/handlers/ping";
 import { ChatView } from "../chat/ChatView";
 import { ChatList } from "../contacts/ChatList";
 import { Ghost } from "../ui/Ghost";
-import { BackupSheet, MyCodeSheet, ScanSheet } from "./Sheets";
+import { GroupView } from "../chat/GroupView";
+import { BackupSheet, MyCodeSheet, NewGroupSheet, ScanSheet } from "./Sheets";
 
-export type SheetName = "code" | "scan" | "backup";
+export type SheetName = "code" | "scan" | "backup" | "group";
 
 export interface AppShellProps {
   /** Contact PIN of the open chat; without one the list fills the phone screen. */
   chatPin?: string;
+  /** Open group conversation, when the route is /g/$groupId. */
+  groupId?: string;
   initialSheet?: SheetName;
 }
 
 /** The messenger: chat list beside the open conversation on wide screens, one at a time on a phone. */
-export function AppShell({ chatPin, initialSheet }: AppShellProps) {
+export function AppShell({ chatPin, groupId, initialSheet }: AppShellProps) {
   const [sheet, setSheet] = useState<SheetName | null>(initialSheet ?? null);
   const shaking = useShakeStore((s) => s.shaking);
-  const chatOpen = !!chatPin;
+  const chatOpen = !!chatPin || !!groupId;
 
   return (
     <div className="flex h-dvh overflow-hidden bg-paper">
@@ -26,8 +29,9 @@ export function AppShell({ chatPin, initialSheet }: AppShellProps) {
         className={`${chatOpen ? "hidden md:flex" : "flex"} w-full shrink-0 flex-col border-rule md:w-[380px] md:border-r`}
       >
         <ChatList
-          selected={chatPin}
+          selected={chatPin ?? (groupId ? `g:${groupId}` : undefined)}
           onScan={() => setSheet("scan")}
+          onNewGroup={() => setSheet("group")}
           onMyCode={() => setSheet("code")}
           onBackup={() => setSheet("backup")}
         />
@@ -35,6 +39,8 @@ export function AppShell({ chatPin, initialSheet }: AppShellProps) {
       <main className={`${chatOpen ? "flex" : "hidden md:flex"} min-w-0 flex-1 flex-col bg-paper${shaking && chatOpen ? " pinme-shake" : ""}`}>
         {chatPin ? (
           <ChatView key={chatPin} pin={chatPin} />
+        ) : groupId ? (
+          <GroupView key={groupId} groupId={groupId} />
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
             <Ghost className="w-14 text-paper-3" />
@@ -45,6 +51,7 @@ export function AppShell({ chatPin, initialSheet }: AppShellProps) {
       {sheet === "code" ? <MyCodeSheet onClose={() => setSheet(null)} /> : null}
       {sheet === "scan" ? <ScanSheet onClose={() => setSheet(null)} /> : null}
       {sheet === "backup" ? <BackupSheet onClose={() => setSheet(null)} /> : null}
+      {sheet === "group" ? <NewGroupSheet onClose={() => setSheet(null)} /> : null}
     </div>
   );
 }

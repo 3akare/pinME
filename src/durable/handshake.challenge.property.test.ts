@@ -14,6 +14,9 @@ const directory: DirectoryClient = {
   async isContactPair() {
     return true;
   },
+  async mayRelay() {
+    return true;
+  },
 };
 
 const randomBytes = (n: number) => crypto.getRandomValues(new Uint8Array(n));

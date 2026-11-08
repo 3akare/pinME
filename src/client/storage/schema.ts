@@ -1,7 +1,7 @@
 import type { DBSchema } from "idb";
 
 export const DB_NAME = "pinme";
-export const DB_VERSION = 2;
+export const DB_VERSION = 3;
 
 export type PinStatus = "active" | "burned";
 export type Marker = "clock" | "D" | "R";
@@ -68,6 +68,31 @@ export interface PendingContactRecord {
   receivedAt: number;
 }
 
+export interface GroupMember {
+  pin: string;
+  displayName: string;
+  boxPk: Uint8Array;
+}
+
+/**
+ * A group as one own PIN sees it. `members` are the other PINs (never the own one); their keys
+ * come from the Directory, not from whoever created the group.
+ */
+export interface GroupRecord {
+  ownPin: string;
+  groupId: string;
+  name: string;
+  members: GroupMember[];
+  createdBy: string;
+  createdAt: number;
+  /** Received messages up to this time have been seen. */
+  lastReadAt?: number;
+}
+
+/** Conversation id a group's messages are filed under (MessageRecord.contactPin). */
+export const groupKey = (groupId: string): string => `g:${groupId}`;
+export const isGroupKey = (contactPin: string): boolean => contactPin.startsWith("g:");
+
 export interface MessageRecord {
   ownPin: string;
   contactPin: string;
@@ -76,7 +101,10 @@ export interface MessageRecord {
   text: string;
   ts: number;
   marker?: Marker;
-  kind: "chat" | "broadcast";
+  /** `group`: a group message (contactPin is groupKey); `system`: a note such as "Ada left". */
+  kind: "chat" | "broadcast" | "group" | "system";
+  /** Who wrote an incoming group message. */
+  sender?: string;
   /** Outgoing message written while offline; sent when the session authenticates. */
   pending?: boolean;
   /** Outgoing message the server refused for good (e.g. the contact is gone). */
@@ -100,6 +128,11 @@ export interface PinmeDB extends DBSchema {
     key: [string, string];
     value: PendingContactRecord;
   };
+  groups: {
+    key: [string, string];
+    value: GroupRecord;
+    indexes: { byOwnPin: string };
+  };
   messages: {
     key: [string, string, string];
     value: MessageRecord;
@@ -107,7 +140,7 @@ export interface PinmeDB extends DBSchema {
   };
 }
 
-export type StoreName = "identity" | "pins" | "contacts" | "invites" | "pendingContacts" | "messages";
+export type StoreName = "identity" | "pins" | "contacts" | "invites" | "pendingContacts" | "groups" | "messages";
 
 export const STORE_NAMES: readonly StoreName[] = [
   "identity",
@@ -115,5 +148,6 @@ export const STORE_NAMES: readonly StoreName[] = [
   "contacts",
   "invites",
   "pendingContacts",
+  "groups",
   "messages",
 ];

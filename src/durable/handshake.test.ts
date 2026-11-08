@@ -18,6 +18,7 @@ const dir = (record: PinRecord | "throw"): DirectoryClient => ({
     return record;
   },
   isContactPair: async () => false,
+  mayRelay: async () => false,
 });
 
 async function sign(priv: CryptoKey, challengeB64: string) {

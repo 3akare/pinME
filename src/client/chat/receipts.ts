@@ -48,7 +48,8 @@ export function createReceiptSender(deps: ReceiptSenderDeps): ReceiptSender {
 
   return {
     onSaved(m) {
-      if (m.direction !== "in") return;
+      // Group messages and notes carry no D/R: there is no single sender to report back to.
+      if (m.direction !== "in" || m.kind === "group" || m.kind === "system") return;
       sendWithRetry({ type: "delivered", to: m.contactPin, messageId: m.messageId }, now());
       if (deps.isChatVisible(m.ownPin, m.contactPin)) sendRead(m);
       else pendingRead.set(keyOf(m), m);

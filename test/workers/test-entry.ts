@@ -22,6 +22,9 @@ const fakeDirectory: DirectoryClient = {
   async isContactPair() {
     return false;
   },
+  async mayRelay() {
+    return false;
+  },
 };
 
 /** PinMailbox wired to the fake Directory (no Neon). */

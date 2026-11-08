@@ -5,6 +5,7 @@ import type { ManagePinsDeps } from "../pins/manage";
 import { usePinsStore } from "../state/pins";
 import { useContactsStore } from "../state/contacts";
 import { useChatStore } from "../state/chat";
+import { useGroupsStore } from "../state/groups";
 import { cleanupBurnedPin } from "../storage/burnCleanup";
 import { burnPinFn } from "../../server/functions/burn";
 import { updateProfileFn } from "../../server/functions/profile";
@@ -64,6 +65,7 @@ export async function buildBurnFlowDeps(
         contacts.contacts.filter((c) => c.ownPin !== pin),
         contacts.pendingInvites.filter((i) => i.ownPin !== pin),
       );
+      useGroupsStore.setState((s) => ({ groups: s.groups.filter((g) => g.ownPin !== pin) }));
       useChatStore.setState((s) => ({
         messages: Object.fromEntries(Object.entries(s.messages).filter(([k]) => !k.startsWith(`${pin}:`))),
       }));

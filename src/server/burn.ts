@@ -6,7 +6,7 @@
  */
 import { eq, or } from "drizzle-orm";
 import type { Db } from "../db/client";
-import { burnedPins, contacts, invites, pins } from "../db/schema";
+import { burnedPins, contacts, groupMembers, invites, pins } from "../db/schema";
 import type { ErrorCode } from "../shared/protocol";
 import { safeLog } from "../shared/safeLog";
 import { guardPrivateKeys } from "./guard";
@@ -95,6 +95,8 @@ export function createDrizzleBurnRepository(db: Db): BurnRepository {
         const formerContacts = rows.map((r) => (r.low === pin ? r.high : r.low));
         await tx.delete(contacts).where(or(eq(contacts.pinLow, pin), eq(contacts.pinHigh, pin)));
         await tx.delete(invites).where(or(eq(invites.fromPin, pin), eq(invites.toPin, pin)));
+        // A burned PIN leaves every group, so group-mates can no longer relay to it.
+        await tx.delete(groupMembers).where(eq(groupMembers.pin, pin));
         return { formerContacts };
       });
     },

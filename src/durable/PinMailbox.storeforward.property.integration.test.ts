@@ -73,7 +73,7 @@ async function makeMailbox() {
   } as unknown as DurableObjectState;
   const deps: Partial<PinMailboxDeps> = {
     now: () => 1_000_000,
-    directory: () => ({ isContactPair: async () => true, lookupPin: async () => ({ state: "active" }) }) as never,
+    directory: () => ({ isContactPair: async () => true, mayRelay: async () => true, lookupPin: async () => ({ state: "active" }) }) as never,
   };
   const mailbox = new PinMailbox(real, env as never, deps);
   Object.defineProperty(mailbox, "ctx", { value: ctx, configurable: true });

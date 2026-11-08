@@ -28,7 +28,7 @@ async function makeMailbox(status = 201) {
   const pushed: string[] = [];
   const deps: Partial<PinMailboxDeps> = {
     now: () => clock,
-    directory: () => ({ isContactPair: async () => true, lookupPin: async () => ({ state: "active" }) }) as never,
+    directory: () => ({ isContactPair: async () => true, mayRelay: async () => true, lookupPin: async () => ({ state: "active" }) }) as never,
     push: async (endpoint) => {
       pushed.push(endpoint);
       return status;

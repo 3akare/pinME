@@ -51,6 +51,7 @@ const dirOf = (d: Directory) => () =>
     isContactPair: async () => {
       return d.accepted;
     },
+    mayRelay: async () => d.accepted,
     lookupPin: async () => ({ state: "active" }),
   }) as never;
 
