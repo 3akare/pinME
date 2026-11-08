@@ -8,6 +8,8 @@ import { isConnected, useConnectionStatus } from "../client/state/connection";
 import { useContactsStore } from "../client/state/contacts";
 import { usePinsStore } from "../client/state/pins";
 import { DeliveryMarker } from "../components/chat/MessageBubble";
+import { Avatar } from "../components/ui/Avatar";
+import { Icon } from "../components/ui/Icon";
 import { MAX_PLAINTEXT_CHARS } from "../shared/limits";
 import type { MessageRecord } from "../client/storage";
 
@@ -58,9 +60,9 @@ function Broadcast() {
 
   if (!ready) {
     return (
-      <main className="mx-auto max-w-md p-6">
+      <main className="flex min-h-dvh items-center justify-center bg-paper">
         <p role="status" aria-live="polite" className="text-muted">
-          Loading...
+          Loading…
         </p>
       </main>
     );
@@ -111,68 +113,67 @@ function Broadcast() {
     return m?.marker ?? "clock";
   }
 
+  const active = usePinsStore.getState().pins.find((p) => p.pin === activePin);
+
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-3 sm:p-4">
-      <header className="flex items-center gap-3">
-        <Link
-          to="/"
-          className="rounded-xl border border-border px-3 py-1 text-sm hover:border-accent focus-visible:outline-2 focus-visible:outline-accent"
-        >
-          Back
+    <main className="min-h-dvh bg-paper">
+      <header className="flex h-16 items-center gap-3 border-b border-rule px-3 sm:px-5">
+        <Link to="/" aria-label="Back" className="icon-btn">
+          <Icon name="back" />
         </Link>
-        <h1 className="text-lg font-bold text-text">Broadcast</h1>
+        <h1 className="font-display text-2xl">Broadcast</h1>
       </header>
-      <form onSubmit={onSubmit} className="flex flex-col gap-2">
-        <label htmlFor="broadcast-text" className="text-sm text-muted">
-          Message to all contacts of this PIN
-        </label>
-        <textarea
-          id="broadcast-text"
-          value={text}
-          maxLength={MAX_PLAINTEXT_CHARS}
-          onChange={(e) => setText(e.target.value)}
-          rows={3}
-          className="rounded-xl border border-border bg-surface p-2 text-text"
-        />
-        {error ? (
-          <p role="alert" className="text-sm text-red-400">
-            {error}
+      <div className="mx-auto flex max-w-2xl flex-col gap-8 px-4 py-8 sm:px-6">
+        <form onSubmit={onSubmit} className="flex flex-col gap-3">
+          <label htmlFor="broadcast-text" className="text-ink-2">
+            One message to every contact of your {active?.label ?? "current"} PIN. Each gets their own encrypted copy.
+          </label>
+          <textarea
+            id="broadcast-text"
+            value={text}
+            maxLength={MAX_PLAINTEXT_CHARS}
+            onChange={(e) => setText(e.target.value)}
+            rows={4}
+            className="field min-h-32 resize-y py-3"
+          />
+          {error ? (
+            <p role="alert" className="text-sm text-error">
+              {error}
+            </p>
+          ) : null}
+          <button
+            type="submit"
+            disabled={status !== "connected" || text.length === 0 || mine.length === 0}
+            className="btn btn--primary self-end"
+          >
+            Send to all
+          </button>
+        </form>
+        {mine.length === 0 ? (
+          <p role="status" className="text-muted">
+            This PIN has no contacts yet.
           </p>
-        ) : null}
-        <button
-          type="submit"
-          disabled={status !== "connected" || text.length === 0 || mine.length === 0}
-          className="self-end rounded-xl bg-accent px-4 py-2 font-semibold text-on-accent disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-        >
-          Send to all
-        </button>
-      </form>
-      {mine.length === 0 ? (
-        <p role="status" className="text-muted">
-          This PIN has no contacts yet.
-        </p>
-      ) : (
-        <ul aria-label="Recipients" className="flex flex-col gap-2">
-          {mine.map((c) => {
-            const marker = markerFor(c.contactPin);
-            return (
-              <li
-                key={c.contactPin}
-                className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-3 py-2"
-              >
-                <span className="min-w-0 flex-1 truncate text-text">{c.displayName}</span>
-                {failed.has(c.contactPin) ? (
-                  <span role="status" className="text-xs text-red-400">
-                    Failed
-                  </span>
-                ) : marker ? (
-                  <DeliveryMarker marker={marker} />
-                ) : null}
-              </li>
-            );
-          })}
-        </ul>
-      )}
+        ) : (
+          <ul aria-label="Recipients" className="border-t border-rule">
+            {mine.map((c) => {
+              const marker = markerFor(c.contactPin);
+              return (
+                <li key={c.contactPin} className="flex items-center gap-3 border-b border-rule px-1 py-3">
+                  <Avatar name={c.displayName} picture={c.picture} size={36} />
+                  <span className="min-w-0 flex-1 truncate text-ink">{c.displayName}</span>
+                  {failed.has(c.contactPin) ? (
+                    <span role="status" className="text-sm text-error">
+                      Failed
+                    </span>
+                  ) : marker ? (
+                    <DeliveryMarker marker={marker} />
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
     </main>
   );
 }

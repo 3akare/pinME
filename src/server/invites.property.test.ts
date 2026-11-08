@@ -234,3 +234,31 @@ describe("Property 7: invite decision and state transitions", () => {
     );
   });
 });
+
+describe("invite link token", () => {
+  const fresh = () =>
+    new FakeRepo({ exists: [true, true, true, true], burned: [false, false, false, false], invites: [], contacts: [] });
+
+  it("relays a well-formed token to the invited PIN's mailbox", async () => {
+    const repo = fresh();
+    const deps = makeDeps(repo);
+    const pushed: unknown[] = [];
+    deps.mailboxFor = () => ({
+      checkInviteQuota: async () => ({ ok: true, retryAfterMs: 0 }),
+      pushNotice: async (n) => void pushed.push(n),
+      invalidatePairs: () => {},
+    });
+    const token = "abcdefghijklmnopqrstuv";
+    const res = await sendInvite(deps, await sign(POOL[0], "sendInvite", { to: POOL[1], token }));
+    expect(res.ok).toBe(true);
+    expect(pushed[0]).toMatchObject({ kind: "invite", from: POOL[0], token });
+  });
+
+  it("rejects a malformed token before anything is written", async () => {
+    const repo = fresh();
+    const before = repo.snapshot();
+    const res = await sendInvite(makeDeps(repo), await sign(POOL[0], "sendInvite", { to: POOL[1], token: "short" }));
+    expect(res).toMatchObject({ ok: false, code: "validation_failed", field: "token" });
+    expect(repo.snapshot()).toBe(before);
+  });
+});

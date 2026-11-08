@@ -1,10 +1,11 @@
+import { formatTime } from "../../client/chat/format";
 import type { Marker } from "../../shared/marker";
 
 export function DeliveryMarker({ marker }: { marker: Marker }) {
   if (marker === "clock") {
     return (
-      <span role="img" aria-label="Sending" data-marker="clock" className="shrink-0 self-end">
-        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <span role="img" aria-label="Sending" data-marker="clock" className="shrink-0">
+        <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.5">
           <circle cx="8" cy="8" r="6.25" />
           <path d="M8 4.5V8l2.5 1.5" strokeLinecap="round" />
         </svg>
@@ -16,7 +17,7 @@ export function DeliveryMarker({ marker }: { marker: Marker }) {
       role="img"
       aria-label={marker === "D" ? "Delivered" : "Read"}
       data-marker={marker}
-      className="shrink-0 self-end text-xs font-bold leading-none"
+      className={`shrink-0 text-xs font-semibold leading-none ${marker === "R" ? "text-accent" : ""}`}
     >
       {marker}
     </span>
@@ -27,10 +28,17 @@ export interface MessageBubbleProps {
   direction: "in" | "out";
   text: string;
   marker?: Marker;
+  ts?: number;
+  /** Fixed time text instead of formatting `ts` (server-rendered demos must not depend on locale). */
+  timeText?: string;
+  /** Written while offline; goes out on reconnect. */
+  pending?: boolean;
+  /** Refused by the relay for good. */
+  failed?: boolean;
 }
 
-/** Sent bubbles align right and carry a Delivery_Marker; received bubbles align left without one. */
-export function MessageBubble({ direction, text, marker }: MessageBubbleProps) {
+/** Sent bubbles sit right on the lifted paper with time and Delivery_Marker; received sit left. */
+export function MessageBubble({ direction, text, marker, ts, timeText, pending, failed }: MessageBubbleProps) {
   const sent = direction === "out";
   return (
     <div
@@ -39,12 +47,16 @@ export function MessageBubble({ direction, text, marker }: MessageBubbleProps) {
       className={`flex w-full ${sent ? "justify-end" : "justify-start"}`}
     >
       <div
-        className={`flex max-w-[85%] items-start gap-2 rounded-2xl px-3 py-2 ${
-          sent ? "bg-accent-strong text-white" : "border border-border bg-surface text-text"
+        className={`flex max-w-[78%] flex-col gap-1 px-3.5 py-2 ${
+          sent ? "rounded-[18px] rounded-br-md bg-paper-3 text-ink" : "rounded-[18px] rounded-bl-md bg-paper-2 text-ink"
         }`}
       >
         <p className="min-w-0 whitespace-pre-wrap break-words">{text}</p>
-        {sent ? <DeliveryMarker marker={marker ?? "clock"} /> : null}
+        <span className={`flex items-center gap-1.5 self-end text-xs ${failed ? "text-error" : "text-muted"}`}>
+          {failed ? "Not delivered" : pending ? "Waiting for connection" : null}
+          {timeText ? <span>{timeText}</span> : ts !== undefined ? <time dateTime={new Date(ts).toISOString()}>{formatTime(ts)}</time> : null}
+          {sent && !failed ? <DeliveryMarker marker={marker ?? "clock"} /> : null}
+        </span>
       </div>
     </div>
   );

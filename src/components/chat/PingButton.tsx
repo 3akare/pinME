@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Dispatcher } from "../../client/net/dispatch";
+import { Icon } from "../ui/Icon";
 
 /** Error frames arriving within this window after a ping are attributed to it. */
 export const PING_ERROR_WINDOW_MS = 2000;
@@ -65,21 +66,26 @@ export function PingButton({ to, send, dispatcher, disabled, now = Date.now }: P
   }
 
   return (
-    <>
+    <span className="relative shrink-0">
       <button
         type="button"
         onClick={onClick}
         disabled={disabled || rateLimited}
         aria-label="Send PING"
-        className="rounded-xl border border-border px-3 py-2 font-semibold text-text hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50"
+        title="PING: shakes their screen"
+        className="icon-btn h-11 w-11 shrink-0"
       >
-        PING!
+        <Icon name="bolt" />
       </button>
       {notDelivered ? (
-        <span role="status" aria-live="polite" className="text-xs text-muted">
+        <span
+          role="status"
+          aria-live="polite"
+          className="absolute bottom-full left-0 mb-2 whitespace-nowrap rounded-pill bg-paper-3 px-3 py-1 text-xs text-ink"
+        >
           PING not delivered.
         </span>
       ) : null}
-    </>
+    </span>
   );
 }

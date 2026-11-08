@@ -20,14 +20,14 @@ export function dotStateFor(contact: Pick<ContactRecord, "presence" | "unavailab
 export function StatusDot({ state }: { state: DotState }) {
   // Distinct by color and shape: green disc, red ring with a bar, hollow grey ring, grey ring with a cross bar.
   const shape: Record<DotState, string> = {
-    available: "inline-block h-3 w-3 shrink-0 rounded-full bg-green-400 ring-2 ring-surface",
-    busy: "inline-flex h-3 w-3 shrink-0 items-center justify-center rounded-full border-2 border-red-400 bg-bg",
+    available: "inline-block h-3 w-3 shrink-0 rounded-full bg-accent ring-2 ring-paper-2",
+    busy: "inline-flex h-3 w-3 shrink-0 items-center justify-center rounded-full border-2 border-error bg-bg",
     unknown: "inline-block h-3 w-3 shrink-0 rounded-full border-2 border-muted bg-bg",
     unavailable: "inline-flex h-3 w-3 shrink-0 items-center justify-center rounded-full border-2 border-muted bg-bg",
   };
   return (
     <span role="img" aria-label={DOT_LABEL[state]} data-status={state} className={shape[state]}>
-      {state === "busy" ? <span className="h-0.5 w-1.5 bg-red-400" /> : null}
+      {state === "busy" ? <span className="h-0.5 w-1.5 bg-error" /> : null}
       {state === "unavailable" ? <span className="h-0.5 w-1.5 bg-muted" /> : null}
     </span>
   );

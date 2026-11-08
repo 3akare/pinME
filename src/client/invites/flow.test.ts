@@ -2,17 +2,19 @@ import { describe, expect, it, vi } from "vitest";
 import { createDispatcher } from "../net/dispatch";
 import { registerInviteHandlers } from "../net/handlers/invites";
 import type { ContactRecord, InviteRecord, PendingContactRecord, PinRecord } from "../storage";
+import { connectTo } from "./connect";
 import { createInviteFlow, INVITE_NAME_LOOKUP_MS, type InviteFlowDeps } from "./flow";
 
 const OWN = "AAAAAAAA";
 const OTHER = "BBBBBBBB";
 const INVITE_ID = "11111111-1111-4111-8111-111111111111";
+const TOKEN = "abcdefghijklmnopqrstuv";
 
 function setup(overrides: Partial<InviteFlowDeps> = {}) {
   const contacts = new Map<string, ContactRecord>();
   const invites = new Map<string, InviteRecord>();
   const pending = new Map<string, PendingContactRecord>();
-  const own = { pin: OWN, signSk: new Uint8Array(64), status: "active" } as unknown as PinRecord;
+  const own = { pin: OWN, signSk: new Uint8Array(64), status: "active", inviteToken: TOKEN } as unknown as PinRecord;
   const sendInviteFn = vi.fn(async (_r: unknown) => ({ ok: true as const, value: { inviteId: INVITE_ID } }));
   const respondInviteFn = vi.fn(async (_r: unknown) => ({
     ok: true as const,
@@ -33,7 +35,10 @@ function setup(overrides: Partial<InviteFlowDeps> = {}) {
   const deps: InviteFlowDeps = {
     repos: {
       pinRepo: { get: async (p: string) => (p === OWN ? own : undefined) },
-      contactRepo: { put: async (c: ContactRecord) => void contacts.set(c.contactPin, c) },
+      contactRepo: {
+        put: async (c: ContactRecord) => void contacts.set(c.contactPin, c),
+        get: async (_o: string, c: string) => contacts.get(c),
+      },
       pendingContactRepo: {
         listAll: async () => [...pending.values()],
         put: async (r: PendingContactRecord) => void pending.set(`${r.ownPin}:${r.contactPin}`, r),
@@ -191,5 +196,62 @@ describe("invite flow", () => {
     t.getPublicProfileFn.mockClear();
     await t.flow.respondInvite(OWN, INVITE_ID, true);
     expect(t.getPublicProfileFn).toHaveBeenCalledTimes(1);
+  });
+
+  it("an invite carrying this PIN's link token is accepted without asking", async () => {
+    const onAutoAccepted = vi.fn();
+    const t = setup({ onAutoAccepted });
+    await t.flow.onInvite(OWN, OTHER, INVITE_ID, TOKEN);
+    expect(t.respondInviteFn.mock.calls[0]![0]).toMatchObject({ payload: { inviteId: INVITE_ID, accept: true } });
+    expect(t.contacts.has(OTHER)).toBe(true);
+    expect(t.store.addInvite).not.toHaveBeenCalled();
+    expect(onAutoAccepted).toHaveBeenCalledWith(expect.objectContaining({ contactPin: OTHER }));
+  });
+
+  it("a wrong or missing token leaves the invite for the user to answer", async () => {
+    const t = setup();
+    await t.flow.onInvite(OWN, OTHER, INVITE_ID, "zzzzzzzzzzzzzzzzzzzzzz");
+    expect(t.respondInviteFn).not.toHaveBeenCalled();
+    expect(t.store.addInvite).toHaveBeenCalledWith(expect.objectContaining({ inviteId: INVITE_ID }));
+  });
+
+  it("sends the scanned link token with the invite", async () => {
+    const t = setup();
+    await t.flow.sendInvite(OWN, OTHER, TOKEN);
+    expect(t.sendInviteFn.mock.calls[0]![0]).toMatchObject({ payload: { to: OTHER, token: TOKEN } });
+  });
+});
+
+describe("connectTo", () => {
+  const flow = (over: Partial<Parameters<typeof connectTo>[0]["flow"]> = {}) => ({
+    sendInvite: vi.fn(async () => ({ ok: true as const })),
+    respondInvite: vi.fn(async () => ({ ok: true as const })),
+    ...over,
+  });
+  const repos = (contact?: Partial<ContactRecord>, invites: InviteRecord[] = []) =>
+    ({
+      contactRepo: { get: async () => contact as ContactRecord | undefined },
+      inviteRepo: { listForPin: async () => invites },
+    }) as never;
+
+  it("opens the chat with an existing contact", async () => {
+    expect(await connectTo({ flow: flow(), repos: repos({ unavailable: false }), ownPins: [OWN] }, OWN, { pin: OTHER })).toEqual({ kind: "chat" });
+  });
+  it("accepts their pending invite instead of sending another", async () => {
+    const f = flow();
+    const inv = { inviteId: INVITE_ID, ownPin: OWN, fromPin: OTHER, createdAt: 1 };
+    expect(await connectTo({ flow: f, repos: repos(undefined, [inv]), ownPins: [OWN] }, OWN, { pin: OTHER })).toEqual({ kind: "accepted" });
+    expect(f.respondInvite).toHaveBeenCalledWith(OWN, INVITE_ID, true);
+    expect(f.sendInvite).not.toHaveBeenCalled();
+  });
+  it("sends an invite with the token and waits; a duplicate also waits", async () => {
+    const f = flow();
+    expect(await connectTo({ flow: f, repos: repos(), ownPins: [OWN] }, OWN, { pin: OTHER, token: TOKEN })).toEqual({ kind: "waiting" });
+    expect(f.sendInvite).toHaveBeenCalledWith(OWN, OTHER, TOKEN);
+    const dup = flow({ sendInvite: vi.fn(async () => ({ ok: false as const, code: "duplicate" })) });
+    expect(await connectTo({ flow: dup, repos: repos(), ownPins: [OWN] }, OWN, { pin: OTHER })).toEqual({ kind: "waiting" });
+  });
+  it("refuses your own PIN", async () => {
+    expect(await connectTo({ flow: flow(), repos: repos(), ownPins: [OWN, OTHER] }, OWN, { pin: OTHER })).toEqual({ kind: "own" });
   });
 });

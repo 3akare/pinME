@@ -13,14 +13,14 @@ export function BurnDialog({ label, pin, busy, error, onConfirm, onCancel }: Bur
   const cancelRef = useRef<HTMLButtonElement>(null);
   return (
     <Modal labelledBy="burn-title" describedBy="burn-desc" initialFocus={cancelRef} onDismiss={busy ? undefined : onCancel}>
-      <h2 id="burn-title" className="text-lg font-semibold">
+      <h2 id="burn-title" className="font-display text-2xl">
         Burn {label}?
       </h2>
-      <p id="burn-desc" className="mt-2 text-sm">
-        PIN <span className="font-mono">{pin}</span> will be burned permanently. This cannot be undone. Everyone who
+      <p id="burn-desc" className="mt-3 text-ink-2">
+        PIN <span className="[font-variant-numeric:lining-nums_tabular-nums] text-ink">{pin}</span> will be burned permanently. This cannot be undone. Everyone who
         only knew this PIN is cut off for good.
       </p>
-      <p role="alert" aria-live="assertive" className="mt-2 min-h-5 text-sm text-red-300">
+      <p role="alert" aria-live="assertive" className="mt-2 min-h-5 text-sm text-error">
         {error}
       </p>
       <div className="mt-3 flex justify-end gap-2">
@@ -29,7 +29,7 @@ export function BurnDialog({ label, pin, busy, error, onConfirm, onCancel }: Bur
           type="button"
           onClick={onCancel}
           disabled={busy}
-          className="rounded-xl border border-border px-4 py-2 focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-60"
+          className="btn btn--quiet btn--sm"
         >
           Cancel
         </button>
@@ -37,7 +37,7 @@ export function BurnDialog({ label, pin, busy, error, onConfirm, onCancel }: Bur
           type="button"
           onClick={onConfirm}
           disabled={busy}
-          className="rounded-xl bg-red-700 px-4 py-2 font-semibold text-white hover:bg-red-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-60"
+          className="btn btn--primary btn--sm"
         >
           {busy ? "Burning..." : "Burn PIN"}
         </button>

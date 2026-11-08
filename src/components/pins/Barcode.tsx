@@ -11,6 +11,11 @@ export interface BarcodeProps {
 
 const MIN_SIZE = 200;
 
+/** Hex value of a theme token (the QR encoder needs plain hex). */
+function cssToken(name: string): string {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
 /** Renders a QR code on a rounded card with the PIN printed underneath. */
 export function Barcode({ pin, value, size = MIN_SIZE }: BarcodeProps) {
   const content = value ?? pin;
@@ -25,7 +30,7 @@ export function Barcode({ pin, value, size = MIN_SIZE }: BarcodeProps) {
       width: px * 2, // 2x for crisp rendering on high-density screens
       margin: 1,
       errorCorrectionLevel: "M",
-      color: { dark: "#0b1220", light: "#ffffff" },
+      color: { dark: cssToken("--color-qr-dark"), light: cssToken("--color-qr-light") },
     })
       .then((url) => {
         if (!cancelled) setDataUrl(url);
@@ -39,9 +44,9 @@ export function Barcode({ pin, value, size = MIN_SIZE }: BarcodeProps) {
   }, [content, px]);
 
   return (
-    <figure className="flex flex-col items-center gap-3 rounded-2xl border border-blue-500/40 bg-slate-900 p-4">
+    <figure className="m-0 flex flex-col items-center gap-4">
       <div
-        className="flex items-center justify-center rounded-xl bg-white p-2"
+        className="flex items-center justify-center rounded-card bg-qr-light p-3"
         style={{ width: px + 16, height: px + 16, maxWidth: "100%" }}
       >
         {dataUrl ? (
@@ -53,12 +58,12 @@ export function Barcode({ pin, value, size = MIN_SIZE }: BarcodeProps) {
             style={{ width: px, height: px }}
           />
         ) : (
-          <span className="text-sm text-slate-900" role={failed ? "alert" : "status"}>
-            {failed ? "Could not create barcode" : "Loading barcode..."}
+          <span className="text-sm text-qr-dark" role={failed ? "alert" : "status"}>
+            {failed ? "Could not create the code" : "Drawing your code…"}
           </span>
         )}
       </div>
-      <figcaption className="font-mono text-lg tracking-widest text-slate-100">{pin}</figcaption>
+      <figcaption className="font-display text-3xl [font-variant-numeric:lining-nums_tabular-nums] text-ink">{pin}</figcaption>
     </figure>
   );
 }

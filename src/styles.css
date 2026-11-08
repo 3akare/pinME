@@ -1,36 +1,118 @@
+/* Hallmark · shape: Workbench (/ for visitors), app screen (chats, chat, PINs, broadcast, onboarding, connect) · genre: atmospheric · theme: Spore (deal 1/3, seed web-messenger-chatting-pin-0a50·c0922039·2026-11-08·r0) · redesign: full
+ * hero: Settled · nav: banner over a retracting bar · footer: statement · imagery: the product · signature: your PIN set huge with a Burn control that ghosts it in place · spore: cellar
+ * axes: dark/roman-serif/warm · posture: committed · contrast: pass · fold: pass · draw: cb216b · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S5 R4 V4 · weakest: P, a privacy page can turn into a lecture; the hero argues with one object (a PIN you can burn) instead of claims */
+/* Hallmark · waive 8 · sections follow the brief (identity, chat, PINs, server, questions), not hero-features-cta · the draw's code sample and pricing table do not exist for a free messenger */
+/* Hallmark · waive 77 · "What the server can see" is a seven-row table at 72px rows across seven columns inside a full-width band · the linter measures the band wrapper, not the table it holds */
+/* Hallmark · hero-review: fix · 5 findings · 4 resolved 1 partial (at 375 the Burn control sits below the fold because the headline and actions come first) */
+/* Hallmark · finish-review: subagent · 6 findings · 5 resolved 1 partial (head-beside-rows remains on the identity and questions sections, which are not neighbours) · gap: none */
 @import "tailwindcss";
+@import "./tokens.css";
+@import "./base.css" layer(base);
 @import "./styles/shake.css";
 @import "./styles/ghost.css";
 
-/* Messenger dark theme: near-black panels, one blue accent.
-   Contrast: text on bg/surface > 13:1, muted on surface ~6.6:1, accent on bg ~7:1,
-   on-accent on accent ~7.9:1, white on accent-strong (sent bubbles) ~5.4:1. */
+/* Role aliases used across the app and by the theme-contrast test (Req 14.8): the same Spore
+   values as tokens.css, in hex. text on bg 16:1, muted on surface 6.1:1, accent on bg 9.4:1,
+   on-accent on accent 9.4:1. */
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --color-bg: #0d0e12;
-  --color-surface: #16171d;
-  --color-elevated: #1e2028;
-  --color-border: #272a34;
-  --color-text: #ececf1;
-  --color-muted: #9b9eae;
-  --color-accent: #6fa2ff;
-  --color-accent-strong: #2b5fd9;
-  --color-accent-hover: #93baff;
-  --color-on-accent: #0a1020;
+  --color-bg: #0f0a06;
+  --color-surface: #19120e;
+  --color-elevated: #271d17;
+  --color-border: #372f28;
+  --color-text: #efe7d8;
+  --color-muted: #9d9388;
+  --color-accent: #e89f92;
+  --color-accent-hover: #f6c3ba;
+  --color-on-accent: #0f0a06;
+  /* QR modules must be plain dark on light for camera apps. */
+  --color-qr-dark: #0f0a06;
+  --color-qr-light: #efe7d8;
 }
 
-html, body {
-  overflow-x: hidden;
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  max-width: 100%;
-  background-color: var(--color-bg);
-  color: var(--color-text);
-  color-scheme: dark;
-}
+/* Set before hydration on devices that already have an identity (see __root.tsx). */
+html[data-returning] [data-landing] { visibility: hidden; }
 
-/* Quiet scrollbars inside panes. */
-.pinme-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-border) transparent;
+/* One pill pair for the whole product: pink fill for the primary action, a parchment outline beside it. */
+@layer components {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs);
+    min-height: 44px;
+    padding: 0 var(--space-lg);
+    border-radius: var(--radius-pill);
+    font: 600 var(--text-md) / 1 var(--font-body);
+    white-space: nowrap;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background-color var(--dur-micro) var(--ease-out),
+      color var(--dur-micro) var(--ease-out),
+      transform var(--dur-micro) var(--ease-out);
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+  .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .btn[aria-busy="true"] { cursor: progress; }
+  .btn--primary { background: var(--color-accent); color: var(--color-accent-ink); }
+  .btn--primary:hover:not(:disabled) { background: var(--color-accent-2); }
+  .btn--quiet { background: transparent; color: var(--color-ink); box-shadow: inset 0 0 0 1.5px var(--color-ink-2); }
+  .btn--quiet:hover:not(:disabled) { background: var(--color-paper-2); }
+  .btn--sm { min-height: 36px; padding: 0 var(--space-md); font-size: var(--text-sm); }
+
+  /* Square-edged icon button for toolbars: 40px with a 44px hit area. */
+  .icon-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-pill);
+    color: var(--color-ink-2);
+    cursor: pointer;
+    transition: background-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out);
+  }
+  .icon-btn::after { content: ""; position: absolute; inset: -2px; }
+  .icon-btn:hover:not(:disabled) { background: var(--color-paper-3); color: var(--color-ink); }
+  .icon-btn:active:not(:disabled) { transform: translateY(1px); }
+  .icon-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+  .icon-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .field {
+    min-height: 48px;
+    width: 100%;
+    padding: 0 var(--space-md);
+    background: var(--color-paper);
+    color: var(--color-ink);
+    border: 1.5px solid var(--color-ink-2);
+    border-radius: 0;
+  }
+  .field::placeholder { color: var(--color-muted); }
+  .field:hover { border-color: var(--color-ink); }
+  .field:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+  .field[aria-invalid="true"] { border-color: var(--color-error); }
+  .field:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  .link { color: var(--color-ink); text-decoration: underline; text-decoration-color: var(--color-ink-2); transition: text-decoration-color var(--dur-micro) var(--ease-out); }
+  .link:hover { text-decoration-color: var(--color-accent); }
+  .link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+  .grained { position: relative; isolation: isolate; }
+  .grained::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-base);
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: var(--grain);
+    mix-blend-mode: screen;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.6 0 0 0 0 0.55 0 0 0 0 0.45 0 0 0 0.35 0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Quiet scrollbars inside panes. */
+  .pane-scroll { scrollbar-width: thin; scrollbar-color: var(--color-rule) transparent; }
 }

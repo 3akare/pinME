@@ -48,7 +48,7 @@ export function PinShareCard({ pin }: PinShareCardProps) {
   return (
     <section aria-label="My code" className="flex w-full flex-col items-center gap-3">
       <p className="text-center text-muted">Scan to chat with me. No accept needed.</p>
-      {link ? <Barcode pin={pin} value={link} /> : <p role="status" className="text-muted">Preparing your code...</p>}
+      {link ? <Barcode pin={pin} value={link} /> : <p role="status" className="text-muted">Preparing your code…</p>}
       <div className="flex w-full max-w-sm gap-2">
         <label htmlFor="my-link" className="sr-only">
           My chat link

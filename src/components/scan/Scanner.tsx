@@ -67,19 +67,28 @@ export function Scanner({ ownPins, onPin, onCancel, onManualEntry }: ScannerProp
   const unavailable = state.status === "camera-unavailable";
 
   return (
-    <section aria-label="Scan a PIN barcode">
-      {!unavailable && <div id={READER_ID} />}
-      <p role="status" aria-live="polite">
-        {state.message ?? (state.status === "scanning" ? "Point the camera at a PIN barcode." : "")}
-      </p>
-      {unavailable && (
-        <button type="button" onClick={() => sessionRef.current?.manualEntry()}>
-          Enter PIN manually
-        </button>
+    <section aria-label="Scan a PinMe code" className="flex flex-col gap-3">
+      {!unavailable && (
+        <div id={READER_ID} className="aspect-square w-full overflow-hidden rounded-card bg-paper-3" />
       )}
-      <button type="button" onClick={() => void sessionRef.current?.cancel()}>
-        Cancel
-      </button>
+      <p role="status" aria-live="polite" className="min-h-5 text-sm text-ink-2">
+        {state.message ??
+          (state.status === "scanning"
+            ? "Point the camera at their code."
+            : state.status === "starting"
+              ? "Starting the camera…"
+              : "")}
+      </p>
+      <div className="flex gap-2">
+        {unavailable && (
+          <button type="button" className="btn btn--quiet btn--sm" onClick={() => sessionRef.current?.manualEntry()}>
+            Enter PIN manually
+          </button>
+        )}
+        <button type="button" className="btn btn--quiet btn--sm" onClick={() => void sessionRef.current?.cancel()}>
+          Cancel
+        </button>
+      </div>
     </section>
   );
 }

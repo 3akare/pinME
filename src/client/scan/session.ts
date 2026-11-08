@@ -33,8 +33,8 @@ export interface ScanState {
 }
 
 export const SCAN_MESSAGES = {
-  invalid: "That barcode is not a valid PIN. Keep scanning or enter the PIN manually.",
-  ownPin: "That is your own PIN. Scan a contact's barcode instead.",
+  invalid: "That is not a PinMe code. Keep scanning or type their PIN.",
+  ownPin: "That is your own code. Scan theirs instead.",
   cameraUnavailable:
     "Camera unavailable: permission was denied or no camera was found. You can enter the PIN manually.",
 } as const;

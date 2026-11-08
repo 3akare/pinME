@@ -45,7 +45,7 @@ export function Modal({ labelledBy, describedBy, onDismiss, initialFocus, varian
   const sheet = variant === "sheet";
   return (
     <div
-      className={`fixed inset-0 z-50 flex justify-center bg-black/70 ${sheet ? "items-end sm:items-center sm:p-4" : "items-center p-4"}`}
+      className={`fixed inset-0 z-50 flex justify-center bg-paper/85 ${sheet ? "items-end sm:items-center sm:p-4" : "items-center p-4"}`}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onDismiss?.();
       }}

@@ -26,3 +26,15 @@ describe("Property 9: Scan classification", () => {
     );
   });
 });
+
+describe("invite links", () => {
+  it("reads a PIN and token from an invite link from any origin, and rejects other paths", async () => {
+    const { parseInvite, inviteUrl, newInviteToken } = await import("./scan");
+    const token = newInviteToken((n) => new Uint8Array(n).fill(7));
+    expect(parseInvite(inviteUrl("https://pinme.example", "2A4F9C1B", token))).toEqual({ pin: "2A4F9C1B", token });
+    expect(parseInvite("http://localhost:5173/i/2A4F9C1B")).toEqual({ pin: "2A4F9C1B" });
+    expect(parseInvite("https://pinme.example/x/2A4F9C1B")).toBeNull();
+    expect(parseInvite("javascript:alert(1)")).toBeNull();
+    expect(classifyScan(inviteUrl("https://a.b", "2A4F9C1B", token), ["2A4F9C1B"])).toBe("own-pin");
+  });
+});

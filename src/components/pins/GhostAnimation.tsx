@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Ghost } from "../ui/Ghost";
 export const GHOST_DURATION_MS = 1600;
 export const GHOST_REDUCED_DURATION_MS = 300;
 function prefersReducedMotion(): boolean {
@@ -20,9 +21,7 @@ export function GhostAnimation({ onComplete, reducedMotion }: GhostAnimationProp
   }, [reduced]);
   return (
     <div className="pinme-ghost-overlay" role="status" aria-live="polite" data-testid="ghost-animation">
-      <span className="pinme-ghost" aria-hidden="true">
-        👻
-      </span>
+      <Ghost className="pinme-ghost" />
       <span className="sr-only">PIN burned</span>
     </div>
   );

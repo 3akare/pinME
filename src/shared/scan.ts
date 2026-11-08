@@ -51,7 +51,8 @@ export function parseInvite(text: string): InviteTarget | null {
  * - `invalid`: anything else
  */
 export function classifyScan(text: string, ownPins: Iterable<string>): ScanResult {
-  const target = isValidPin(text) ? { pin: text } : parseInvite(text);
+  // A bare PIN must match exactly; only full links are parsed.
+  const target = isValidPin(text) ? { pin: text } : /^https?:\/\//.test(text) ? parseInvite(text) : null;
   if (!target) return "invalid";
   for (const own of ownPins) {
     if (own === target.pin) return "own-pin";

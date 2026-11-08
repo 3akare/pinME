@@ -70,13 +70,23 @@ describe("MessageInput", () => {
     await waitFor(() => expect(box().value).toBe(""));
   });
 
-  it("disables send and does not send when not connected", () => {
-    const onSend = vi.fn();
+  it("still accepts a message while offline (it is queued) and says so", async () => {
+    const onSend = vi.fn().mockResolvedValue(true);
     render(<MessageInput onSend={onSend} connected={false} />);
+    expect(screen.getByRole("status").textContent).toContain("Offline");
     fireEvent.change(box(), { target: { value: "hello" } });
-    expect(sendBtn().disabled).toBe(true);
+    expect(sendBtn().disabled).toBe(false);
     fireEvent.submit(box().closest("form")!);
+    await waitFor(() => expect(onSend).toHaveBeenCalledWith("hello"));
+  });
+
+  it("sends on Enter and keeps Shift+Enter for a new line", async () => {
+    const onSend = vi.fn().mockResolvedValue(true);
+    render(<MessageInput onSend={onSend} connected />);
+    fireEvent.change(box(), { target: { value: "line" } });
+    fireEvent.keyDown(box(), { key: "Enter", shiftKey: true });
     expect(onSend).not.toHaveBeenCalled();
-    expect(screen.getByRole("status").textContent).toContain("Disconnected");
+    fireEvent.keyDown(box(), { key: "Enter" });
+    await waitFor(() => expect(onSend).toHaveBeenCalledWith("line"));
   });
 });

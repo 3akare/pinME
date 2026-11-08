@@ -28,17 +28,16 @@ export function PinCard({ pin, label, contactCount, selected, onOpen, onRename }
     if (!err) setEditing(false);
   }
 
-  const btn =
-    "rounded-xl border border-border px-3 py-2 text-sm font-semibold text-text hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
+  const btn = "btn btn--quiet btn--sm";
 
   return (
     <article
       aria-label={`PIN ${label}`}
-      className={`rounded-2xl border bg-surface p-4 ${selected ? "border-accent" : "border-border"}`}
+      className={`flex flex-col gap-3 border-b border-rule px-3 py-4 transition-colors duration-[var(--dur-micro)] ${selected ? "bg-paper-2" : ""}`}
     >
       {editing ? (
         <form onSubmit={submit} noValidate className="flex flex-col gap-2">
-          <label htmlFor={`rename-${pin}`} className="text-sm font-medium">
+          <label htmlFor={`rename-${pin}`} className="text-sm font-medium text-ink-2">
             PIN label
           </label>
           <input
@@ -49,13 +48,13 @@ export function PinCard({ pin, label, contactCount, selected, onOpen, onRename }
             onChange={(e) => setDraft(e.target.value)}
             aria-invalid={error ? true : undefined}
             aria-describedby={`rename-${pin}-error`}
-            className="rounded-xl border border-border bg-transparent px-3 py-2 text-text focus-visible:outline-2 focus-visible:outline-accent"
+            className="field"
           />
-          <p id={`rename-${pin}-error`} role="alert" className="min-h-5 text-sm text-red-300">
+          <p id={`rename-${pin}-error`} role="alert" className="min-h-5 text-sm text-error">
             {error}
           </p>
           <div className="flex gap-2">
-            <button type="submit" disabled={busy} className={`${btn} bg-accent text-on-accent`}>
+            <button type="submit" disabled={busy} className="btn btn--primary btn--sm">
               Save label
             </button>
             <button
@@ -73,12 +72,16 @@ export function PinCard({ pin, label, contactCount, selected, onOpen, onRename }
         </form>
       ) : (
         <>
-          <h3 className="truncate text-lg font-semibold">{label}</h3>
-          <p className="font-mono text-muted">{pin}</p>
+          <div className="flex items-baseline justify-between gap-3">
+            <h3 className="truncate font-display text-2xl">{label}</h3>
+            <p data-testid="pin-value" className="shrink-0 font-display text-xl [font-variant-numeric:lining-nums_tabular-nums] text-ink-2">
+              {pin}
+            </p>
+          </div>
           <p className="text-sm text-muted">
             {contactCount} {contactCount === 1 ? "contact" : "contacts"}
           </p>
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2">
             <button type="button" className={btn} onClick={() => onOpen(pin)} aria-pressed={selected}>
               Details
               <span className="sr-only"> for {label}</span>

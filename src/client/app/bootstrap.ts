@@ -32,9 +32,24 @@ export function getLocalStore(): Promise<LocalStore> {
 }
 
 function createFlow(store: LocalStore, extra: Partial<InviteFlowDeps> = {}): InviteFlow {
+  const contacts = useContactsStore.getState();
   return createInviteFlow({
     repos: store,
-    store: useContactsStore.getState(),
+    store: {
+      upsertContact: contacts.upsertContact,
+      removeInvite: (id) => {
+        contacts.removeInvite(id);
+        useToastStore.getState().dismissKey(`invite:${id}`);
+      },
+      addInvite: (i) => {
+        contacts.addInvite(i);
+        useToastStore.getState().push({
+          text: `${i.fromDisplayName ?? i.fromPin} wants to chat.`,
+          key: `invite:${i.inviteId}`,
+          invite: i,
+        });
+      },
+    },
     signRequest: (fields, sk) => signRequest(fields, sk),
     randomBytes,
     sendInviteFn: (req) => sendInviteFn({ data: req }) as ReturnType<InviteFlowDeps["sendInviteFn"]>,
@@ -214,6 +229,17 @@ export async function resetPinLink(pin: string): Promise<void> {
   await resetInviteToken({ repos: store, randomBytes, onSaved: (p) => usePinsStore.getState().addPin(p) }, pin);
 }
 
+/** Remembers that this device has an identity, so the next load hides the landing page at once. */
+function markReturning(on: boolean): void {
+  try {
+    if (on) localStorage.setItem("pinme:returning", "1");
+    else localStorage.removeItem("pinme:returning");
+  } catch {
+    // storage blocked: the landing page may flash, nothing else changes
+  }
+  if (!on && typeof document !== "undefined") delete document.documentElement.dataset.returning;
+}
+
 let booted: Promise<boolean> | null = null;
 /**
  * Loads identity, PINs, contacts and invites from the Local_Store, then
@@ -227,6 +253,7 @@ export function bootstrapApp(force = false): Promise<boolean> {
       const store = await getLocalStore();
       const [id, pins] = await Promise.all([store.identityRepo.get(), store.pinRepo.getAll()]);
       useIdentityStore.getState().setLoaded(id ?? null);
+      markReturning(!!id);
       if (!id) {
         booted = null;
         return false;
@@ -241,6 +268,7 @@ export function bootstrapApp(force = false): Promise<boolean> {
     } catch {
       booted = null;
       useIdentityStore.getState().setLoaded(null);
+      markReturning(false);
       return false;
     }
   })();

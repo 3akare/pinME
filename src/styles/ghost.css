@@ -5,11 +5,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgb(0 0 0 / 0.7);
+  background: color-mix(in oklab, var(--color-paper) 85%, transparent);
   pointer-events: all;
 }
 .pinme-ghost {
-  font-size: 5rem;
+  width: 7rem;
+  color: var(--color-ink);
   line-height: 1;
   animation: pinme-ghost-rise 1.6s ease-in forwards;
 }
@@ -26,4 +27,16 @@
     0% { opacity: 1; }
     100% { opacity: 0; }
   }
+}
+
+/* Landing demo: the ghost lifts out of the burned PIN once. */
+.burn-ghost {
+  animation: burn-ghost-in var(--dur-long) var(--ease-out) both;
+}
+@keyframes burn-ghost-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.92); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .burn-ghost { animation: none; }
 }

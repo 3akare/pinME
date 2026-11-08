@@ -1,14 +1,6 @@
 import { useEffect, useState } from "react";
 
-/** Stable hue per name so avatars are told apart at a glance. */
-const HUES = ["#2b5fd9", "#7c4ddb", "#c2410c", "#0f766e", "#b91c1c", "#4d7c0f", "#a21caf", "#0e7490"];
-function hueFor(name: string): string {
-  let h = 0;
-  for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-  return HUES[h % HUES.length]!;
-}
-
-/** Picture when there is one, otherwise the first letter on a colored disc (original artwork). */
+/** Picture when there is one, otherwise the initial in the display face on a lifted disc (original artwork). */
 export function Avatar({ name, picture, size = 48 }: { name: string; picture?: Blob; size?: number }) {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
@@ -23,8 +15,8 @@ export function Avatar({ name, picture, size = 48 }: { name: string; picture?: B
     <span
       aria-hidden="true"
       data-testid="avatar-placeholder"
-      style={{ ...style, backgroundColor: hueFor(name), fontSize: size * 0.4 }}
-      className="flex shrink-0 items-center justify-center rounded-full font-semibold text-white"
+      style={{ ...style, fontSize: size * 0.42 }}
+      className="flex shrink-0 items-center justify-center rounded-full bg-paper-3 font-display text-ink"
     >
       {name.trim().charAt(0).toUpperCase() || "?"}
     </span>

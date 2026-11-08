@@ -60,7 +60,7 @@ export function InviteRow({ invite, pinLabel, onRespond }: InviteRowProps) {
           Accept
         </button>
       </div>
-      <p role="alert" aria-live="assertive" className="text-sm text-red-300 empty:hidden">
+      <p role="alert" aria-live="assertive" className="text-sm text-error empty:hidden">
         {error}
       </p>
     </li>

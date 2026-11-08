@@ -10,7 +10,8 @@ const NAME_A = "Alice";
 const NAME_B = "Bob";
 const MSG_A = `hello-from-a-${RUN}`;
 const MSG_B = `reply-from-b-${RUN}`;
-const PIN_LABEL = "Marketplace";
+// Unique per run: a common word could also appear in page copy (the landing page uses "Marketplace").
+const PIN_LABEL = `Stall-${RUN}`;
 const DEMO_BUDGET_MS = 180_000;
 
 interface Traffic {
@@ -44,45 +45,28 @@ function captureTraffic(context: BrowserContext): Traffic {
   return t;
 }
 
-async function onboard(page: Page, name: string): Promise<string> {
+async function onboard(page: Page, name: string): Promise<{ pin: string; link: string }> {
   await page.goto("/onboarding");
   await page.waitForLoadState("networkidle");
   await page.getByLabel("Display name").fill(name);
   await page.getByRole("button", { name: "Create my PIN" }).click();
-  await expect(page.getByRole("heading", { name: `You are set, ${name}` })).toBeVisible();
-  const pin = (await page.locator("figcaption").innerText()).trim();
+  // Onboarding lands in the chats with "My code" open.
+  const sheet = page.getByRole("dialog", { name: "My code" });
+  await expect(sheet).toBeVisible({ timeout: 15_000 });
+  const pin = (await sheet.locator("figcaption").innerText()).trim();
   expect(pin).toMatch(/^[0-9A-F]{8}$/);
-  return pin;
-}
-
-async function openHome(page: Page): Promise<void> {
-  await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Contacts", exact: true })).toBeVisible();
-}
-
-async function sendInvite(page: Page, toPin: string): Promise<void> {
-  await page.getByRole("link", { name: "Add contact" }).click();
-  await page.getByLabel("Contact PIN").fill(toPin);
-  await page.getByRole("button", { name: "Send invite" }).click();
-  await expect(page.getByText("Invite sent.")).toBeVisible();
-  await page.getByRole("link", { name: "Back to contacts" }).click();
-}
-
-async function acceptInviteFrom(page: Page, fromPin: string): Promise<void> {
-  const row = page.getByRole("listitem").filter({ hasText: `Invite from ${fromPin}` });
-  await expect(row).toBeVisible({ timeout: 10_000 });
-  await row.getByRole("button", { name: "Accept" }).click();
-  // Accepting opens the chat with the new contact.
-  await expect(page.locator("#message-text")).toBeVisible({ timeout: 10_000 });
+  const link = await sheet.locator("#my-link").inputValue();
+  expect(link).toContain(`/i/${pin}#`);
+  await sheet.getByRole("button", { name: "Close" }).click();
+  return { pin, link };
 }
 
 async function sendText(page: Page, text: string): Promise<void> {
   await page.locator("#message-text").fill(text);
-  const send = page.getByRole("button", { name: "Send", exact: true });
-  await expect(send).toBeEnabled({ timeout: 10_000 });
-  await send.click();
+  await page.locator("#message-text").press("Enter");
 }
 
+const chatRow = (page: Page, name: string) => page.getByRole("list", { name: "Chats" }).getByRole("button", { name: new RegExp(name) });
 const bubble = (page: Page, text: string) => page.getByTestId("message-bubble").filter({ hasText: text });
 
 test.skip(
@@ -90,7 +74,7 @@ test.skip(
   "DATABASE_URL is not set in the environment or .dev.vars; the e2e demo needs a real Neon Postgres database.",
 );
 
-test("two-window demo: add, chat, ping, burn; server sees no plaintext", async ({ browser }) => {
+test("two-window demo: link connect, typed request, chat, ping, burn; server sees no plaintext", async ({ browser }) => {
   test.setTimeout(240_000);
   const sql = neon(DATABASE_URL!);
   const startedAt = Date.now();
@@ -104,23 +88,25 @@ test("two-window demo: add, chat, ping, burn; server sees no plaintext", async (
   const b = await ctxB.newPage();
 
   try {
-    // Window A shows its PIN; window B has its own identity.
-    const pinA = await onboard(a, NAME_A);
-    const pinB = await onboard(b, NAME_B);
-    expect(pinA).not.toBe(pinB);
-    await openHome(a);
-    await openHome(b);
+    // Each window gets its own identity and code.
+    const a1 = await onboard(a, NAME_A);
+    const b1 = await onboard(b, NAME_B);
+    expect(a1.pin).not.toBe(b1.pin);
 
-    // B adds A, A accepts.
-    await sendInvite(b, pinA);
-    await acceptInviteFrom(a, pinB);
-    await expect(b.getByRole("button", { name: new RegExp(NAME_A) })).toBeVisible({ timeout: 10_000 });
+    // B opens A's link (what scanning A's code does): no invite to send, no accept step.
+    await b.goto(a1.link);
+    await expect(b.locator("#message-text")).toBeVisible({ timeout: 15_000 });
+    await expect(chatRow(a, NAME_B)).toBeVisible({ timeout: 10_000 });
 
-    // A sends while B is on the contact list: D appears (Req 25.3), then R when B opens the chat.
+    // A sends while B is on the chat list: D appears (Req 25.3), then R when B opens the chat.
+    await b.goto("/");
+    await expect(chatRow(b, NAME_A)).toBeVisible();
+    await expect(b.getByText(/^Connecting\./)).toHaveCount(0, { timeout: 15_000 });
+    await chatRow(a, NAME_B).click();
     await sendText(a, MSG_A);
     const sentA = bubble(a, MSG_A);
     await expect(sentA.locator('[data-marker="D"]')).toBeVisible({ timeout: 2000 });
-    await b.getByRole("button", { name: new RegExp(NAME_A) }).click();
+    await chatRow(b, NAME_A).click();
     await expect(bubble(b, MSG_A)).toBeVisible({ timeout: 10_000 });
     await expect(sentA.locator('[data-marker="R"]')).toBeVisible({ timeout: 10_000 });
 
@@ -138,34 +124,30 @@ test("two-window demo: add, chat, ping, burn; server sees no plaintext", async (
     await shook;
 
     // A creates the "Marketplace" PIN.
-    await a.getByRole("link", { name: "Back", exact: true }).click();
-    await a.getByRole("link", { name: "My PINs" }).first().click();
+    await a.goto("/pins");
     await a.getByLabel("PIN label").fill(PIN_LABEL);
     await a.getByRole("button", { name: "Create PIN" }).click();
     const card = a.getByRole("article", { name: `PIN ${PIN_LABEL}` });
     await expect(card).toBeVisible();
-    const marketPin = (await card.locator("p.font-mono").innerText()).trim();
+    const marketPin = (await card.getByTestId("pin-value").innerText()).trim();
     expect(marketPin).toMatch(/^[0-9A-F]{8}$/);
 
-    // A switches to the Marketplace PIN so it can receive and accept the invite.
-    await a.getByRole("link", { name: "Back to contacts" }).click();
-    await a.locator("#activePin").selectOption(marketPin);
+    // B types the Marketplace PIN by hand: that one needs A's single Accept, offered wherever A is.
+    await b.goto("/");
+    await b.getByRole("button", { name: "Scan a code" }).click();
+    await b.getByLabel("Or type their PIN").fill(marketPin);
+    await b.getByRole("button", { name: "Chat", exact: true }).click();
+    await expect(b.getByRole("heading", { name: new RegExp(`Request sent to ${NAME_A}`) })).toBeVisible({ timeout: 15_000 });
+    await a.getByRole("button", { name: "Accept" }).click({ timeout: 10_000 });
 
-    // B adds the Marketplace PIN, A accepts.
-    await b.getByRole("link", { name: "Back", exact: true }).click();
-    await sendInvite(b, marketPin);
-    await acceptInviteFrom(a, pinB);
-
-    // B opens the chat with the Marketplace PIN and waits until it is connected.
-    await b.goto(`/chat/${marketPin}`);
+    // B's waiting page opens the chat on its own once accepted.
+    await expect(b).toHaveURL(new RegExp(`/chat/${marketPin}$`), { timeout: 15_000 });
     await expect(b.locator("#message-text")).toBeVisible({ timeout: 15_000 });
     await expect(b.getByRole("button", { name: "Send PING" })).toBeEnabled({ timeout: 15_000 });
 
     // A burns the Marketplace PIN with the ghost animation.
-    await a.getByRole("link", { name: "Back", exact: true }).click();
-    await a.getByRole("link", { name: "My PINs" }).first().click();
-    const marketCard = a.getByRole("article", { name: `PIN ${PIN_LABEL}` });
-    await marketCard.getByRole("button", { name: "Details" }).click();
+    await a.goto("/pins");
+    await a.getByRole("article", { name: `PIN ${PIN_LABEL}` }).getByRole("button", { name: "Details" }).click();
     await a.getByRole("button", { name: "Burn this PIN" }).click();
     await a.getByRole("dialog").getByRole("button", { name: "Burn PIN" }).click();
     await expect(a.getByTestId("ghost-animation")).toBeVisible({ timeout: 10_000 });
@@ -175,7 +157,6 @@ test("two-window demo: add, chat, ping, burn; server sees no plaintext", async (
     await expect(b.locator("#message-text")).toHaveCount(0);
 
     // B can no longer send to the burned PIN: no input, no PING, and no message was added (Req 25.5).
-    // The UI exposes no send path at all once the contact is unavailable.
     await expect(b.getByRole("button", { name: "Send", exact: true })).toHaveCount(0);
     await expect(b.getByRole("button", { name: "Send PING" })).toHaveCount(0);
     await expect(b.getByTestId("message-bubble")).toHaveCount(0);

@@ -1,0 +1,33 @@
+[
+ {
+  "mode": "redesign",
+  "depth": "full",
+  "scope": "site",
+  "shape": "Workbench",
+  "theme": "spore",
+  "axes": "dark/roman-serif/warm",
+  "hero": "Settled",
+  "nav": "banner over a retracting bar",
+  "footer": "statement",
+  "imagery": "the product",
+  "photos": [],
+  "entry": "/",
+  "fingerprint": "pinme-landing-spore-cellar",
+  "sections": [
+   "hero",
+   "rows",
+   "split",
+   "table",
+   "burn-figure",
+   "figures",
+   "faq",
+   "footer"
+  ],
+  "signature": "PIN set huge with a Burn control that ghosts it in place",
+  "waived": [
+   "77"
+  ],
+  "prompt": "a web messenger for chatting by PIN instead of phone number, with burnable PINs",
+  "date": "2026-11-08"
+ }
+]

@@ -77,44 +77,45 @@ export function StatusEditor({ initial, onSave }: StatusEditorProps) {
       }}
     >
       <fieldset className="flex gap-4">
-        <legend className="mb-1 text-sm text-muted">Status</legend>
+        <legend className="mb-2 text-sm font-medium text-ink-2">Status</legend>
         {(["available", "busy"] as const).map((s) => (
-          <label key={s} className="flex items-center gap-2">
+          <label key={s} className="flex cursor-pointer items-center gap-2">
             <input
               type="radio"
               name="status"
               value={s}
               checked={status === s}
               onChange={() => setStatus(s)}
+              className="h-4 w-4 accent-accent focus-visible:outline-2 focus-visible:outline-focus"
             />
             {s === "available" ? "Available" : "Busy"}
           </label>
         ))}
       </fieldset>
       <label className="flex flex-col gap-1">
-        <span className="text-sm text-muted">Personal message</span>
+        <span className="text-sm font-medium text-ink-2">Personal message</span>
         <input
           type="text"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           aria-invalid={validation ? true : undefined}
           aria-describedby="status-editor-feedback"
-          className="rounded-lg border border-white/20 bg-transparent px-3 py-2"
+          className="field"
         />
         <span className="text-xs text-muted">
           {message.length}/{PERSONAL_MESSAGE_MAX}
         </span>
       </label>
-      <div id="status-editor-feedback" role="alert">
+      <div id="status-editor-feedback" role="alert" className="text-sm text-error">
         {validation ? <p>{validation}</p> : null}
         {error ? <p>{error}</p> : null}
       </div>
       <button
         type="submit"
         disabled={busy || validation !== null}
-        className="self-start rounded-lg bg-accent-strong px-4 py-2 font-semibold text-white disabled:opacity-50"
+        className="btn btn--quiet btn--sm self-start"
       >
-        {busy ? "Saving..." : "Save"}
+        {busy ? "Saving…" : "Save status"}
       </button>
     </form>
   );

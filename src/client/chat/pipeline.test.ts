@@ -5,7 +5,7 @@ import { registerMessageHandlers } from "../net/handlers/message";
 import { useChatStore } from "../state/chat";
 import type { ContactRecord, MessageRecord, PinRecord } from "../storage";
 import { receiveMessage, type ReceiveDeps } from "./receive";
-import { sendMessage, type SendDeps } from "./send";
+import { flushPending, sendMessage, type SendDeps } from "./send";
 
 const A = "AAAAAAAA", B = "BBBBBBBB";
 let ka: ReturnType<typeof generatePinKeys>, kb: ReturnType<typeof generatePinKeys>;
@@ -52,13 +52,29 @@ describe("send/receive pipeline", () => {
     expect(rsink.addMessage).toHaveBeenCalledOnce();
   });
 
-  it("does nothing while disconnected", async () => {
+  it("queues a message written while disconnected and sends it on flush", async () => {
     const s = repos(A, ka, B, kb);
-    const send = vi.fn(() => true);
-    const res = await sendMessage({ repos: s.repos, store: { addMessage: vi.fn() }, encrypt, send, isConnected: () => false }, { ownPin: A, contactPin: B, text: "x" });
-    expect(res).toEqual({ ok: false, code: "disconnected" });
+    const send = vi.fn((_d: string) => true);
+    let connected = false;
+    const store = { addMessage: vi.fn(), updateMessage: vi.fn() };
+    const res = await sendMessage({ repos: s.repos, store, encrypt, send, isConnected: () => connected }, { ownPin: A, contactPin: B, text: "x" });
+    expect(res).toMatchObject({ ok: true, queued: true, message: { pending: true, marker: "clock" } });
     expect(send).not.toHaveBeenCalled();
-    expect(s.msgs.size).toBe(0);
+    expect(s.msgs.size).toBe(1);
+
+    const pendingRepos = {
+      ...(s.repos as object),
+      messageRepo: {
+        put: s.put,
+        listPending: async () => [...s.msgs.values()].filter((m) => m.pending),
+      },
+    } as never;
+    connected = true;
+    expect(await flushPending({ repos: pendingRepos, store, encrypt, send, isConnected: () => connected }, A)).toBe(1);
+    expect(send).toHaveBeenCalledOnce();
+    expect(JSON.parse(send.mock.calls[0]![0]).envelope.messageId).toBe(res.ok ? res.message.messageId : "");
+    expect([...s.msgs.values()][0]!.pending).toBe(false);
+    expect(store.updateMessage).toHaveBeenCalledWith(expect.objectContaining({ pending: false }));
   });
 
   it("rejects empty and over-long text", async () => {
