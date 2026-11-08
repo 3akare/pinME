@@ -3,8 +3,10 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { createIdentity } from "../client/app/identity";
 import { validateDisplayName, validatePicture } from "../client/onboarding/form";
 import { useIdentityStore } from "../client/state/identity";
+import { seo } from "../shared/seo";
 
 export const Route = createFileRoute("/onboarding")({
+  head: () => seo({ title: "Get your PIN", description: "Pick a name and get your first PIN. No phone number, no email: your keys are made on your device.", path: "/onboarding" }),
   component: Onboarding,
 });
 

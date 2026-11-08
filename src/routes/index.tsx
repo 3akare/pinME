@@ -2,8 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useIdentityStore } from "../client/state/identity";
 import { AppShell, type SheetName } from "../components/app/AppShell";
 import { Landing } from "../components/landing/Landing";
+import { seo } from "../shared/seo";
 
 export const Route = createFileRoute("/")({
+  head: () => seo({ path: "/" }),
   // `?sheet=code` opens My code (after onboarding); `?sheet=scan` opens the scanner.
   validateSearch: (search: Record<string, unknown>): { sheet?: SheetName } =>
     search.sheet === "code" || search.sheet === "scan" || search.sheet === "backup" || search.sheet === "group"

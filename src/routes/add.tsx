@@ -1,8 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { parseInvite } from "../shared/scan";
+import { seo } from "../shared/seo";
 
 export const Route = createFileRoute("/add")({
+  head: () => seo({ title: "Add a contact", noindex: true }),
   // Older links: `/add?pin=XXXXXXXX` now goes through the connect link.
   validateSearch: (search: Record<string, unknown>): { pin?: string } =>
     typeof search.pin === "string" ? { pin: search.pin.slice(0, 16) } : {},

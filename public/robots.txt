@@ -1,0 +1,12 @@
+# Private app screens never appear in search. Invite links (/i/...) stay crawlable so that
+# Discord, LinkedIn, X and other link previews work; they carry a noindex tag instead.
+User-agent: *
+Allow: /
+Disallow: /chat/
+Disallow: /g/
+Disallow: /pins
+Disallow: /broadcast
+Disallow: /add
+Disallow: /echo
+
+Sitemap: https://pinme.bakaredavid007.workers.dev/sitemap.xml

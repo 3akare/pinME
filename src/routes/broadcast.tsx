@@ -11,8 +11,10 @@ import { Avatar } from "../components/ui/Avatar";
 import { Icon } from "../components/ui/Icon";
 import { MAX_PLAINTEXT_CHARS } from "../shared/limits";
 import type { MessageRecord } from "../client/storage";
+import { seo } from "../shared/seo";
 
 export const Route = createFileRoute("/broadcast")({
+  head: () => seo({ title: "Broadcast", noindex: true }),
   component: Broadcast,
 });
 

@@ -14,8 +14,10 @@ import { PinCard } from "../components/pins/PinCard";
 import { PinShareCard } from "../components/pins/PinShareCard";
 import { StatusEditor, type StatusValues } from "../components/pins/StatusEditor";
 import { MAX_ACTIVE_PINS } from "../shared/limits";
+import { seo } from "../shared/seo";
 
 export const Route = createFileRoute("/pins")({
+  head: () => seo({ title: "My PINs", noindex: true }),
   component: PinManager,
 });
 

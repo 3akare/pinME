@@ -1,6 +1,7 @@
 /// <reference types="vite/client" />
 import { HeadContent, Link, Outlet, Scripts, createRootRoute } from "@tanstack/react-router";
 import { AppRuntime } from "../components/app/AppRuntime";
+import { seo, STRUCTURED_DATA } from "../shared/seo";
 import appCss from "../styles.css?url";
 
 /** Runs before hydration: returning devices skip the flash of the landing page while their chats load. */
@@ -14,11 +15,8 @@ export const Route = createRootRoute({
       { name: "theme-color", content: "#0f0a06" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
-      { title: "PinMe: chat by PIN, not phone number" },
-      {
-        name: "description",
-        content: "A web messenger where you chat by PIN instead of phone number, and can burn a PIN to cut off everyone who had it.",
-      },
+      { name: "application-name", content: "PinMe" },
+      ...seo().meta,
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -32,7 +30,7 @@ export const Route = createRootRoute({
       { rel: "icon", href: "/icons/icon-192.png", type: "image/png" },
       { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
     ],
-    scripts: [{ children: RETURNING_HINT }],
+    scripts: [{ children: RETURNING_HINT }, { type: "application/ld+json", children: JSON.stringify(STRUCTURED_DATA) }],
   }),
   component: RootComponent,
   notFoundComponent: NotFoundComponent,

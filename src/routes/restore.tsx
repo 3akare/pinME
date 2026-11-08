@@ -2,8 +2,10 @@ import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { restoreBackupFile, type RestoreResult } from "../client/app/backup";
 import { useIdentityStore } from "../client/state/identity";
+import { seo } from "../shared/seo";
 
 export const Route = createFileRoute("/restore")({
+  head: () => seo({ title: "Restore a backup", description: "Bring your PinMe PINs, contacts and chats back onto this device from your encrypted backup file.", path: "/restore" }),
   component: Restore,
 });
 

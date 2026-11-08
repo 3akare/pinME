@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { connectSocket, type ReconnectingSocket } from "../client/net/socket";
+import { seo } from "../shared/seo";
 
 export const Route = createFileRoute("/echo")({
+  head: () => seo({ title: "Echo", noindex: true }),
   component: Echo,
 });
 

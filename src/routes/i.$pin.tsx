@@ -13,8 +13,26 @@ import { isValidPin } from "../shared/pin";
 import { getPublicProfileFn } from "../server/functions/pins";
 import { Avatar } from "../components/ui/Avatar";
 import { Ghost } from "../components/ui/Ghost";
+import { seo } from "../shared/seo";
+
+type Profile = { ok: boolean; value?: { displayName: string }; code?: string };
 
 export const Route = createFileRoute("/i/$pin")({
+  // The inviter's public display name, also on the server so shared links preview as "Chat with Ada".
+  loader: async ({ params }): Promise<{ name: string | null; gone: string | null }> => {
+    if (!isValidPin(params.pin)) return { name: null, gone: null };
+    const r = (await getPublicProfileFn({ data: { pin: params.pin } }).catch(() => null)) as Profile | null;
+    if (r?.ok && r.value) return { name: r.value.displayName, gone: null };
+    return { name: null, gone: r?.code === "not_found" || r?.code === "pin_burned" ? r.code : null };
+  },
+  head: ({ loaderData }) =>
+    seo({
+      title: loaderData?.name ? `Chat with ${loaderData.name}` : "Chat with me",
+      description: loaderData?.name
+        ? `${loaderData.name} invited you to chat on PinMe. Open the link to start: no phone number, end-to-end encrypted.`
+        : "Open this link to start chatting on PinMe: no phone number needed, end-to-end encrypted.",
+      noindex: true,
+    }),
   component: Connect,
 });
 
@@ -40,8 +58,8 @@ function Connect() {
   const identity = useIdentityStore((s) => s.identity);
   const loaded = useIdentityStore((s) => s.loaded);
   const activePin = usePinsStore((s) => s.activePin);
-  const [phase, setPhase] = useState<Phase>({ kind: "loading" });
-  const [name, setName] = useState<string | null>(null);
+  const { name, gone } = Route.useLoaderData();
+  const [phase, setPhase] = useState<Phase>(gone ? { kind: "error", message: addErrorMessage(gone) } : { kind: "loading" });
   const token = useRef<string | undefined>(undefined);
   const started = useRef(false);
 
@@ -52,17 +70,6 @@ function Connect() {
     if (location.hash) history.replaceState(history.state, "", location.pathname);
     void bootstrapApp();
   }, []);
-
-  useEffect(() => {
-    if (!isValidPin(pin)) return;
-    void (getPublicProfileFn({ data: { pin } }) as Promise<{ ok: boolean; value?: { displayName: string }; code?: string }>)
-      .then((r) => {
-        if (r.ok && r.value) setName(r.value.displayName);
-        else if (r.code === "not_found" || r.code === "pin_burned")
-          setPhase({ kind: "error", message: addErrorMessage(r.code) });
-      })
-      .catch(() => {});
-  }, [pin]);
 
   async function connect(own: string) {
     setPhase({ kind: "connecting" });
@@ -85,7 +92,7 @@ function Connect() {
       setPhase({ kind: "error", message: "That link does not hold a PinMe code." });
       return;
     }
-    if (!loaded || started.current) return;
+    if (!loaded || started.current || gone) return;
     if (!identity) {
       setPhase((p) => (p.kind === "loading" ? { kind: "name" } : p));
       return;
