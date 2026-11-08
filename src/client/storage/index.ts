@@ -14,6 +14,8 @@ import {
   type Marker,
   type PendingContactRecord,
   type GroupRecord,
+  type PrekeyRecord,
+  type SessionRecord,
   type PinRecord,
   type PinmeDB,
   type StoreName,
@@ -87,6 +89,16 @@ export interface Repositories {
     put(record: GroupRecord): Promise<void>;
     delete(ownPin: string, groupId: string): Promise<void>;
   };
+  sessionRepo: {
+    get(ownPin: string, peerPin: string): Promise<SessionRecord | undefined>;
+    put(record: SessionRecord): Promise<void>;
+  };
+  prekeyRepo: {
+    get(ownPin: string, id: number): Promise<PrekeyRecord | undefined>;
+    listForPin(ownPin: string): Promise<PrekeyRecord[]>;
+    put(record: PrekeyRecord): Promise<void>;
+    delete(ownPin: string, id: number): Promise<void>;
+  };
   messageRepo: {
     get(
       ownPin: string,
@@ -156,6 +168,20 @@ function buildRepos(ctx: Ctx): Repositories {
       },
       delete: (ownPin, groupId) => ctx.store("groups").delete([ownPin, groupId]),
     },
+    sessionRepo: {
+      get: (ownPin, peerPin) => ctx.store("sessions").get([ownPin, peerPin]),
+      put: async (record) => {
+        await ctx.store("sessions").put(record);
+      },
+    },
+    prekeyRepo: {
+      get: (ownPin, id) => ctx.store("prekeys").get([ownPin, id]),
+      listForPin: (ownPin) => ctx.store("prekeys").index("byOwnPin").getAll(ownPin),
+      put: async (record) => {
+        await ctx.store("prekeys").put(record);
+      },
+      delete: (ownPin, id) => ctx.store("prekeys").delete([ownPin, id]),
+    },
     messageRepo: {
       get: (ownPin, contactPin, messageId) =>
         ctx.store("messages").get([ownPin, contactPin, messageId]),
@@ -209,6 +235,10 @@ export interface LocalStore extends Repositories {
 export async function openLocalStore(name: string = DB_NAME): Promise<LocalStore> {
   const db = await openDB<PinmeDB>(name, DB_VERSION, {
     upgrade(database, oldVersion) {
+      if (oldVersion < 4) {
+        database.createObjectStore("sessions", { keyPath: ["ownPin", "peerPin"] });
+        database.createObjectStore("prekeys", { keyPath: ["ownPin", "id"] }).createIndex("byOwnPin", "ownPin");
+      }
       if (oldVersion < 3) {
         database.createObjectStore("groups", { keyPath: ["ownPin", "groupId"] }).createIndex("byOwnPin", "ownPin");
       }
@@ -250,11 +280,13 @@ export async function openLocalStore(name: string = DB_NAME): Promise<LocalStore
   };
 
   const purgePin: LocalStore["purgePin"] = (pin) =>
-    transaction(["pins", "contacts", "pendingContacts", "groups", "invites", "messages"], async (_repos, tx) => {
+    transaction(["pins", "contacts", "pendingContacts", "groups", "sessions", "prekeys", "invites", "messages"], async (_repos, tx) => {
       await tx.objectStore("pins").delete(pin);
       await tx.objectStore("contacts").delete(prefixRange(pin));
       await tx.objectStore("pendingContacts").delete(prefixRange(pin));
       await tx.objectStore("groups").delete(prefixRange(pin));
+      await tx.objectStore("sessions").delete(prefixRange(pin));
+      await tx.objectStore("prekeys").delete(IDBKeyRange.bound([pin, -Infinity], [pin, Infinity]));
       await tx.objectStore("messages").delete(prefixRange(pin));
       const invites = tx.objectStore("invites").index("byOwnPin");
       for await (const cursor of invites.iterate(pin)) await cursor.delete();

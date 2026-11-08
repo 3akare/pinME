@@ -1,7 +1,7 @@
 import type { DBSchema } from "idb";
 
 export const DB_NAME = "pinme";
-export const DB_VERSION = 3;
+export const DB_VERSION = 4;
 
 export type PinStatus = "active" | "burned";
 export type Marker = "clock" | "D" | "R";
@@ -72,6 +72,8 @@ export interface GroupMember {
   pin: string;
   displayName: string;
   boxPk: Uint8Array;
+  /** Ed25519 key from the Directory; verifies their prekeys (absent in groups saved before forward secrecy). */
+  signPk?: Uint8Array;
 }
 
 /**
@@ -92,6 +94,28 @@ export interface GroupRecord {
    * before that lookup, so a reload mid-lookup cannot lose the invitation.
    */
   unresolved?: string[];
+}
+
+/**
+ * Double Ratchet sessions with one peer, newest first. More than one exists only briefly, when
+ * both sides started a session at the same time; whichever decrypts moves to the front.
+ * The state shape is owned by `src/client/crypto/ratchet.ts`.
+ */
+export interface SessionRecord {
+  ownPin: string;
+  peerPin: string;
+  sessions: unknown[];
+  updatedAt: number;
+}
+
+/** A prekey's private half, kept until it is used (one-time) or retired (signed). */
+export interface PrekeyRecord {
+  ownPin: string;
+  id: number;
+  kind: "spk" | "opk";
+  pub: Uint8Array;
+  priv: Uint8Array;
+  createdAt: number;
 }
 
 /** Conversation id a group's messages are filed under (MessageRecord.contactPin). */
@@ -138,6 +162,15 @@ export interface PinmeDB extends DBSchema {
     value: GroupRecord;
     indexes: { byOwnPin: string };
   };
+  sessions: {
+    key: [string, string];
+    value: SessionRecord;
+  };
+  prekeys: {
+    key: [string, number];
+    value: PrekeyRecord;
+    indexes: { byOwnPin: string };
+  };
   messages: {
     key: [string, string, string];
     value: MessageRecord;
@@ -145,7 +178,16 @@ export interface PinmeDB extends DBSchema {
   };
 }
 
-export type StoreName = "identity" | "pins" | "contacts" | "invites" | "pendingContacts" | "groups" | "messages";
+export type StoreName =
+  | "identity"
+  | "pins"
+  | "contacts"
+  | "invites"
+  | "pendingContacts"
+  | "groups"
+  | "sessions"
+  | "prekeys"
+  | "messages";
 
 export const STORE_NAMES: readonly StoreName[] = [
   "identity",
@@ -154,5 +196,7 @@ export const STORE_NAMES: readonly StoreName[] = [
   "invites",
   "pendingContacts",
   "groups",
+  "sessions",
+  "prekeys",
   "messages",
 ];

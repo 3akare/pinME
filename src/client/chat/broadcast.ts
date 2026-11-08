@@ -34,10 +34,11 @@ export async function sendBroadcast(
 
   const newId = deps.newMessageId ?? (() => crypto.randomUUID());
   const now = deps.now ?? Date.now;
-  const items = contacts.map((c) => {
+  const items = [];
+  for (const c of contacts) {
     const messageId = newId();
-    const { nonce, ciphertext } = deps.encrypt(text, c.boxPk, pin.boxSk);
-    return {
+    const { nonce, ciphertext } = await deps.encrypt(text, c.boxPk, pin.boxSk, { ownPin, peerPin: c.contactPin });
+    items.push({
       contactPin: c.contactPin,
       messageId,
       envelope: {
@@ -46,8 +47,8 @@ export async function sendBroadcast(
         nonce: bytesToBase64(nonce),
         ciphertext: bytesToBase64(ciphertext),
       },
-    };
-  });
+    });
+  }
 
   const sent: BroadcastSent[] = [];
   const failed: string[] = [];

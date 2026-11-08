@@ -1,8 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { bootstrapApp, getLocalStore, getSession } from "../client/app/bootstrap";
+import { bootstrapApp, getLocalStore, getSession, secureEncrypt } from "../client/app/bootstrap";
 import { sendBroadcast } from "../client/chat/broadcast";
-import { encrypt } from "../client/crypto";
 import { useChatStore, conversationKey, hydrateConversation } from "../client/state/chat";
 import { isConnected, useConnectionStatus } from "../client/state/connection";
 import { useContactsStore } from "../client/state/contacts";
@@ -82,7 +81,7 @@ function Broadcast() {
       {
         repos,
         store: useChatStore.getState(),
-        encrypt,
+        encrypt: secureEncrypt,
         send: (d) => session.send(d),
         isConnected: () => isConnected(activePin),
       },

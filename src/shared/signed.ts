@@ -10,6 +10,8 @@ export const SIGNED_ACTIONS = [
   "registerPush",
   "createGroup",
   "leaveGroup",
+  "publishPrekeys",
+  "getPrekeys",
 ] as const;
 
 export const SignedActionSchema = z.enum(SIGNED_ACTIONS);

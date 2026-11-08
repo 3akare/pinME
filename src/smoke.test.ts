@@ -65,7 +65,7 @@ describe("dev vars (Req 20.3)", () => {
 describe("README (Req 18.9, 18.10, 20.5)", () => {
   const readme = read("README.md");
   it("has required sections", () => {
-    for (const h of [/^#+\s*No forward secrecy/im, /^#+\s*What the server can see/im, /^#+\s*Burn guarantee/im, /^#+\s*Known limitations/im, /^#+\s*Setup/im]) {
+    for (const h of [/^#+\s*Forward secrecy/im, /^#+\s*What the server can see/im, /^#+\s*Burn guarantee/im, /^#+\s*Known limitations/im, /^#+\s*Setup/im]) {
       expect(readme).toMatch(h);
     }
     expect(readme).toContain("DATABASE_URL");

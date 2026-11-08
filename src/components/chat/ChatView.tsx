@@ -1,9 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { bootstrapApp, getLocalStore, getSession, notifyChatVisible } from "../../client/app/bootstrap";
+import { bootstrapApp, getLocalStore, getSession, notifyChatVisible, secureEncrypt, warmSession } from "../../client/app/bootstrap";
 import { sendMessage } from "../../client/chat/send";
 import { createTypingThrottle, useTypingStore } from "../../client/chat/typing";
-import { encrypt } from "../../client/crypto";
 import { conversationKey, hydrateConversation, useChatStore } from "../../client/state/chat";
 import { isConnected, useConnectionStatus, type ConnectionStatus } from "../../client/state/connection";
 import { useContactsStore } from "../../client/state/contacts";
@@ -75,6 +74,12 @@ export function ChatView({ pin }: { pin: string }) {
     };
   }, [key]);
 
+  // Fetch the peer's prekeys now, so the first message does not wait on it.
+  const peerIk = contact?.boxPk;
+  useEffect(() => {
+    if (ready && activePin && peerIk && !contact?.unavailable) void warmSession(activePin, pin, peerIk);
+  }, [ready, activePin, pin, peerIk, contact?.unavailable]);
+
   // Read receipts and the unread count follow what is actually on screen.
   useEffect(() => {
     if (!ready || !activePin) return;
@@ -138,7 +143,7 @@ export function ChatView({ pin }: { pin: string }) {
       {
         repos: await getLocalStore(),
         store: useChatStore.getState(),
-        encrypt,
+        encrypt: secureEncrypt,
         send: (d) => getSession(own)?.send(d) ?? false,
         isConnected: () => isConnected(own),
       },

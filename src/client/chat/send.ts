@@ -11,15 +11,25 @@ export interface QueueSink extends ChatSink {
   updateMessage(message: MessageRecord): void;
 }
 
+/** Which conversation a seal or open is for, so a forward-secret channel can pick its session. */
+export interface PeerContext {
+  ownPin: string;
+  peerPin: string;
+}
+
+export type Sealed = { nonce: Uint8Array; ciphertext: Uint8Array };
+/** Crypto_Module encrypt, or the forward-secret channel's seal (which may be async). */
+export type EncryptFn = (
+  plain: string,
+  recipientBoxPk: Uint8Array,
+  senderBoxSk: Uint8Array,
+  ctx?: PeerContext,
+) => Sealed | Promise<Sealed>;
+
 export interface SendDeps {
   repos: Pick<Repositories, "pinRepo" | "contactRepo" | "messageRepo">;
   store: ChatSink;
-  /** Crypto_Module encrypt. */
-  encrypt: (
-    plain: string,
-    recipientBoxPk: Uint8Array,
-    senderBoxSk: Uint8Array,
-  ) => { nonce: Uint8Array; ciphertext: Uint8Array };
+  encrypt: EncryptFn;
   /** Sends a raw frame; false if the session is not authenticated. */
   send: (data: string) => boolean;
   isConnected: () => boolean;
@@ -32,13 +42,16 @@ export type SendResult =
   | { ok: false; code: "invalid_text" | "unknown_pin" | "unknown_contact" };
 
 /** Encrypts a fresh envelope for the message and hands it to the socket. */
-function transmit(
+async function transmit(
   deps: Pick<SendDeps, "encrypt" | "send">,
   m: MessageRecord,
   recipientBoxPk: Uint8Array,
   senderBoxSk: Uint8Array,
-): boolean {
-  const { nonce, ciphertext } = deps.encrypt(m.text, recipientBoxPk, senderBoxSk);
+): Promise<boolean> {
+  const { nonce, ciphertext } = await deps.encrypt(m.text, recipientBoxPk, senderBoxSk, {
+    ownPin: m.ownPin,
+    peerPin: m.contactPin,
+  });
   const frame = {
     type: "message",
     envelope: { to: m.contactPin, messageId: m.messageId, nonce: bytesToBase64(nonce), ciphertext: bytesToBase64(ciphertext) },
@@ -74,7 +87,7 @@ export async function sendMessage(
     marker: "clock",
     kind: "chat",
   };
-  const sent = deps.isConnected() && transmit(deps, message, contact.boxPk, pin.boxSk);
+  const sent = deps.isConnected() && (await transmit(deps, message, contact.boxPk, pin.boxSk));
   const saved: MessageRecord = sent ? message : { ...message, pending: true };
   deps.store.addMessage(saved);
   await deps.repos.messageRepo.put(saved);
@@ -116,7 +129,7 @@ export async function flushPending(
       deps.store.updateMessage(failed);
       continue;
     }
-    if (!transmit(deps, m, contact.boxPk, pin.boxSk)) break;
+    if (!(await transmit(deps, m, contact.boxPk, pin.boxSk))) break;
     const done: MessageRecord = { ...m, pending: false };
     await deps.repos.messageRepo.put(done);
     deps.store.updateMessage(done);

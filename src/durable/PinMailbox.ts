@@ -13,6 +13,7 @@ import { checkMessageRate, errorFrame, parseFailureFrame } from "./relay";
 import { RateLimiter, type RateLimitResult } from "./ratelimit";
 import { HEARTBEAT_REQUEST, HEARTBEAT_RESPONSE } from "../shared/heartbeat";
 import { isPushEndpoint, PUSH_THROTTLE_MS, sendWakeUp } from "../shared/push";
+import { MAX_OPKS, type PrekeyBundle, type PublicPrekey, type SignedPrekey } from "../server/prekeys";
 import { MAX_BROADCAST_ENVELOPES, PING_RATE_LIMIT, PING_RATE_WINDOW_MS } from "../shared/limits";
 import { processBroadcast, type BroadcastStep } from "./broadcast";
 import {
@@ -44,6 +45,8 @@ export interface MailboxRpc {
 const META_PIN = "meta:pin";
 const META_BURNED = "meta:burned";
 const PUSH_ENDPOINT = "push:endpoint";
+const PK_SPK = "pk:spk";
+const PK_OPK = "pk:opk:";
 const PUSH_LAST = "push:last";
 
 type MailboxEnv = Env & {
@@ -570,6 +573,36 @@ export class PinMailbox extends DurableObject<MailboxEnv> {
         else if (status >= 400) safeLog("push_failed");
       })().catch(() => safeLog("push_failed")),
     );
+  }
+
+  /**
+   * RPC (forward secrecy): stores this PIN's public prekeys. A new signed prekey replaces the old
+   * one; one-time prekeys are added up to MAX_OPKS. Answers how many one-time keys are held.
+   */
+  async putPrekeys(input: { spk?: SignedPrekey; opks: PublicPrekey[] }): Promise<{ opkCount: number }> {
+    if (await isBurned(this.ctx.storage)) return { opkCount: 0 };
+    if (input.spk) await this.ctx.storage.put(PK_SPK, input.spk);
+    const held = await this.ctx.storage.list({ prefix: PK_OPK });
+    let count = held.size;
+    for (const k of input.opks) {
+      if (count >= MAX_OPKS) break;
+      const key = `${PK_OPK}${k.id}`;
+      if (held.has(key)) continue;
+      await this.ctx.storage.put(key, k);
+      count++;
+    }
+    return { opkCount: count };
+  }
+
+  /** RPC (forward secrecy): the signed prekey and one one-time prekey, which is removed for good. */
+  async takePrekeyBundle(): Promise<PrekeyBundle | null> {
+    if (await isBurned(this.ctx.storage)) return null;
+    const spk = await this.ctx.storage.get<SignedPrekey>(PK_SPK);
+    if (!spk) return null;
+    const first = await this.ctx.storage.list<PublicPrekey>({ prefix: PK_OPK, limit: 1 });
+    const [key, opk] = [...first.entries()][0] ?? [];
+    if (key) await this.ctx.storage.delete(key);
+    return opk ? { spk, opk } : { spk };
   }
 
   /** RPC: the contact set changed, so cached pair verdicts must not be reused. */

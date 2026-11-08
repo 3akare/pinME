@@ -7,12 +7,13 @@ import type { ChatSink } from "./send";
 export interface ReceiveDeps {
   repos: Pick<Repositories, "pinRepo" | "contactRepo" | "messageRepo">;
   store: ChatSink;
-  /** Crypto_Module decrypt; returns null on any failure. */
+  /** Crypto_Module decrypt, or the forward-secret channel's open; null on any failure. */
   decrypt: (
     env: { nonce: Uint8Array; ciphertext: Uint8Array },
     senderBoxPk: Uint8Array,
     recipientBoxSk: Uint8Array,
-  ) => string | null;
+    ctx?: { ownPin: string; peerPin: string },
+  ) => string | null | Promise<string | null>;
   now?: () => number;
   /** Hook invoked after the message is persisted and in the store (task 9.2 sends receipts from it). */
   onSaved?: (message: MessageRecord) => void;
@@ -45,10 +46,13 @@ export async function receiveMessage(
     // A group-mate who is not a Contact can only send group messages.
     const senderKey = contact?.boxPk ?? (await deps.groups?.senderKey(ownPin, frame.from)) ?? null;
     if (!senderKey) return null;
-    const text = deps.decrypt(
+    // A repeat delivery is dropped before decrypting, so it never touches a ratchet.
+    if (await deps.repos.messageRepo.get(ownPin, frame.from, env.messageId)) return null;
+    const text = await deps.decrypt(
       { nonce: base64ToBytes(env.nonce), ciphertext: base64ToBytes(env.ciphertext) },
       senderKey,
       pin.boxSk,
+      { ownPin, peerPin: frame.from },
     );
     if (text === null) return null;
     if (isGroupText(text)) {
@@ -58,8 +62,6 @@ export async function receiveMessage(
       return saved;
     }
     if (!contact) return null;
-    const existing = await deps.repos.messageRepo.get(ownPin, frame.from, env.messageId);
-    if (existing) return null; // duplicate delivery
     const message: MessageRecord = {
       ownPin,
       contactPin: frame.from,

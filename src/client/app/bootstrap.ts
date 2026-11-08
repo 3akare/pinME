@@ -4,6 +4,13 @@ import { hydrateGroups, useGroupsStore } from "../state/groups";
 import { connectTo, type ConnectOutcome } from "../invites/connect";
 import { ensureInviteTokens, resetInviteToken } from "../invites/token";
 import { ready, randomBytes, signRequest, decrypt, encrypt } from "../crypto";
+import type { Bundle } from "../crypto/ratchet";
+import { createSecureChannel, type SecureChannel } from "../secure/channel";
+import { ensurePrekeys } from "../secure/prekeys";
+import type { EncryptFn } from "../chat/send";
+import type { ReceiveDeps } from "../chat/receive";
+import { base64ToBytes, bytesToBase64 } from "../../shared/base64";
+import { getPrekeysFn, publishPrekeysFn } from "../../server/functions/prekeys";
 import { createReceiptSender, type ReceiptSender } from "../chat/receipts";
 import { flushPending } from "../chat/send";
 import { registerTypingHandlers, useTypingStore } from "../chat/typing";
@@ -74,6 +81,76 @@ export async function buildInviteFlow(
   return createFlow(store, { navigate });
 }
 
+type SignedAction = "publishPrekeys" | "getPrekeys";
+function signedBody(pin: { pin: string; signSk: Uint8Array }, action: SignedAction, payload: unknown) {
+  const fields = { pin: pin.pin, action, ts: Date.now(), nonce: bytesToBase64(randomBytes(16)), payload };
+  return { ...fields, signature: bytesToBase64(signRequest(fields, pin.signSk)) };
+}
+
+const randomId = () => new DataView(randomBytes(4).buffer).getUint32(0) % 0xfffffffe;
+
+let channel: SecureChannel | null = null;
+/** Forward-secret sessions for every own PIN (X3DH + Double Ratchet), with the legacy box as fallback. */
+function getChannel(store: LocalStore): SecureChannel {
+  channel ??= createSecureChannel({
+    repos: store,
+    randomBytes,
+    legacyEncrypt: encrypt,
+    legacyDecrypt: decrypt,
+    onPrekeyUsed: (pin) => void upkeep(pin, true),
+    async fetchBundle(ownPin, peerPin): Promise<Bundle | null> {
+      const pin = await store.pinRepo.get(ownPin);
+      if (!pin) return null;
+      const res = (await getPrekeysFn({ data: signedBody(pin, "getPrekeys", { pin: peerPin }) })) as
+        | { ok: true; value: { spk: { id: number; pub: string; sig: string }; opk?: { id: number; pub: string } } | null }
+        | { ok: false };
+      if (!res.ok || !res.value) return null;
+      const v = res.value;
+      return {
+        spk: { id: v.spk.id, pub: base64ToBytes(v.spk.pub), sig: base64ToBytes(v.spk.sig) },
+        ...(v.opk ? { opk: { id: v.opk.id, pub: base64ToBytes(v.opk.pub) } } : {}),
+      };
+    },
+  });
+  return channel;
+}
+
+/** Seals with the peer's ratchet session when the call says which conversation it is for. */
+export const secureEncrypt: EncryptFn = async (plain, pk, sk, ctx) =>
+  ctx ? getChannel(await getLocalStore()).seal(ctx.ownPin, ctx.peerPin, pk, plain) : encrypt(plain, pk, sk);
+
+export const secureDecrypt: ReceiveDeps["decrypt"] = async (env, pk, sk, ctx) =>
+  ctx ? getChannel(await getLocalStore()).open(ctx.ownPin, ctx.peerPin, pk, env) : decrypt(env, pk, sk);
+
+/** Prepares the forward-secret session for a conversation before anything is sent. */
+export async function warmSession(ownPin: string, peerPin: string, peerIk: Uint8Array): Promise<void> {
+  await getChannel(await getLocalStore()).warm(ownPin, peerPin, peerIk).catch(() => {});
+}
+
+/** Prekey upkeep at most every few hours per PIN, or at once after a one-time prekey was used. */
+const UPKEEP_MS = 6 * 3_600_000;
+const lastUpkeep = new Map<string, number>();
+async function upkeep(ownPin: string, force = false): Promise<void> {
+  const last = lastUpkeep.get(ownPin) ?? 0;
+  if (!force && Date.now() - last < UPKEEP_MS) return;
+  lastUpkeep.set(ownPin, Date.now());
+  const store = await getLocalStore();
+  const pin = await store.pinRepo.get(ownPin);
+  if (!pin || pin.status !== "active") return;
+  const ok = await ensurePrekeys(
+    {
+      repos: store,
+      randomId,
+      publish: (p, payload) =>
+        publishPrekeysFn({ data: signedBody(p, "publishPrekeys", payload) }) as Promise<
+          { ok: true; value: { opkCount: number } } | { ok: false; code: string }
+        >,
+    },
+    pin,
+  ).catch(() => false);
+  if (!ok) lastUpkeep.delete(ownPin);
+}
+
 let groupFlow: GroupFlow | null = null;
 /** One group flow for the app, sending on whichever own PIN's session a group belongs to. */
 function getGroupFlow(store: LocalStore): GroupFlow {
@@ -81,7 +158,7 @@ function getGroupFlow(store: LocalStore): GroupFlow {
     repos: store,
     chat: useChatStore.getState(),
     groups: useGroupsStore.getState(),
-    encrypt,
+    encrypt: secureEncrypt,
     send: (ownPin, d) => getSession(ownPin)?.send(d) ?? false,
     isConnected,
     signRequest: (fields, sk) => signRequest(fields, sk),
@@ -171,7 +248,7 @@ function wireSession(pin: string, session: Session, store: LocalStore): () => vo
       {
         repos: store,
         store: chat,
-        encrypt,
+        encrypt: secureEncrypt,
         send: (d) => session.send(d),
         isConnected: () => isConnected(pin),
         transmitGroup: (m) => groups.transmit(m),
@@ -208,7 +285,7 @@ function wireSession(pin: string, session: Session, store: LocalStore): () => vo
       ownPin: pin,
       repos: store,
       store: chat,
-      decrypt,
+      decrypt: secureDecrypt,
       groups,
       onSaved: (m) => {
         receipts.onSaved(m);
@@ -220,6 +297,7 @@ function wireSession(pin: string, session: Session, store: LocalStore): () => vo
       if (e.ref) void onRefused(e.ref, e.code, e.retryAfterSec).catch(() => {});
     }),
     session.onAuthenticated(flush),
+    session.onAuthenticated(() => void upkeep(pin)),
   ];
   return () => {
     clearTimeout(retryTimer);
@@ -299,6 +377,19 @@ function markReturning(on: boolean): void {
   if (!on && typeof document !== "undefined") delete document.documentElement.dataset.returning;
 }
 
+let warmingSubscribed = false;
+/** A new Contact gets its forward-secret session prepared right away, before the first message. */
+function warmNewContacts(): void {
+  if (warmingSubscribed) return;
+  warmingSubscribed = true;
+  useContactsStore.subscribe((state, prev) => {
+    const before = new Set(prev.contacts.map((c) => `${c.ownPin}:${c.contactPin}`));
+    for (const c of state.contacts) {
+      if (!c.unavailable && !before.has(`${c.ownPin}:${c.contactPin}`)) void warmSession(c.ownPin, c.contactPin, c.boxPk);
+    }
+  });
+}
+
 let booted: Promise<boolean> | null = null;
 /**
  * Loads identity, PINs, contacts and invites from the Local_Store, then
@@ -321,6 +412,7 @@ export function bootstrapApp(force = false): Promise<boolean> {
       await ready();
       await ensureInviteTokens({ repos: store, randomBytes, onSaved: (p) => usePinsStore.getState().addPin(p) }, pins);
       await hydrateContacts(store, pins.map((p) => p.pin));
+      warmNewContacts();
       await hydrateGroups(store, pins.map((p) => p.pin));
       await startConnections();
       void createFlow(store).resumePendingAccepts().catch(() => {});

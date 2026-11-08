@@ -6,9 +6,14 @@ Messages are end-to-end encrypted in the browser. The server is a directory of p
 
 Stack: TanStack Start (React) on a single Cloudflare Worker, one Durable Object (`PinMailbox`) per PIN, Neon Postgres via Drizzle for the directory, libsodium for crypto, IndexedDB for local storage.
 
-## No forward secrecy
+## Forward secrecy
 
-The MVP provides no forward secrecy. Messages are encrypted with `crypto_box_easy` using long-lived per-PIN X25519 keys. If a private key is compromised later (for example from a stolen or unlocked device or a copied browser profile), anyone who captured ciphertext earlier can decrypt every message that was encrypted to that key.
+Messages, broadcasts and group messages use the Signal design: X3DH to start a session and the Double Ratchet for every message after it (X25519, keyed BLAKE2b, XChaCha20-Poly1305, all from libsodium). Each message has its own key, deleted once used, and the keys keep moving forward, so someone who later steals a device or a copied browser profile cannot decrypt messages captured earlier.
+
+- Each PIN publishes a signed prekey (rotated weekly) and a pool of one-time prekeys to its own mailbox. Only the PIN's contacts and group-mates can fetch them.
+- Opening a chat, or gaining a contact, prepares the session in the background, so the first message is not delayed.
+- Fallback without forward secrecy: a peer that has never published prekeys (an older client) still gets the original `crypto_box_easy` encryption with long-lived keys, and so do messages already stored from before this change.
+- A backup file holds the current ratchet state and your chat history, so it should be kept as safely as the device itself.
 
 ## What the server can see
 
@@ -36,12 +41,12 @@ Limit: burning cannot erase messages already stored on your contacts' devices. A
 
 ## Known limitations
 
-- No forward secrecy (see above). Later key compromise exposes previously captured ciphertext.
+- Forward secrecy needs both sides on a current client (see above); with an older peer, messages fall back to long-lived keys.
 - The server sees metadata: PINs, contact relationships, ciphertext sizes and timing.
 - Private keys and message history live only in the browser's IndexedDB. Clearing browser data or losing the device loses them unless you made a backup (More > Back up): a file encrypted with your passphrase (PBKDF2-SHA-256, 600,000 iterations, AES-256-GCM) that you keep yourself. There is no server-side backup, and a lost passphrase cannot be recovered. A backup restores only onto a device without an identity, and messages that arrived after it are not in it.
 - Burning does not delete messages already on contacts' devices.
 - The server relays your IP address to Cloudflare and the hosting stack as normal for any web service. PinMe does not hide network-level identity.
-- Groups and forward secrecy are optional, post-MVP features and are not provided.
+- Groups hold at most 10 members, and only contacts of the creator can be added. The server knows who is in a group together (not its name or messages).
 
 ## Notifications (installable app)
 

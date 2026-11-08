@@ -2,6 +2,7 @@ import { base64ToBytes, bytesToBase64 } from "../../shared/base64";
 import { GROUP_NAME_MAX, MAX_BROADCAST_ENVELOPES, MAX_GROUP_MEMBERS, MAX_PLAINTEXT_CHARS } from "../../shared/limits";
 import type { FlowFailure, PublicProfile } from "../invites/flow";
 import { groupKey, type GroupMember, type GroupRecord, type MessageRecord, type PinRecord, type Repositories } from "../storage";
+import type { EncryptFn } from "../chat/send";
 import { encodeGroupPayload, type GroupPayload } from "./payload";
 
 type ServerResult<T> = { ok: true; value: T } | FlowFailure;
@@ -23,7 +24,7 @@ export interface GroupFlowDeps {
     clearConversation(ownPin: string, contactPin: string): void;
   };
   groups: { upsert(g: GroupRecord): void; remove(ownPin: string, groupId: string): void };
-  encrypt: (plain: string, recipientBoxPk: Uint8Array, senderBoxSk: Uint8Array) => { nonce: Uint8Array; ciphertext: Uint8Array };
+  encrypt: EncryptFn;
   /** Sends a raw frame on the own PIN's session; false when not authenticated. */
   send: (ownPin: string, data: string) => boolean;
   isConnected: (ownPin: string) => boolean;
@@ -56,12 +57,13 @@ export function createGroupFlow(deps: GroupFlowDeps) {
   }
 
   /** One envelope per member, sent as broadcast frames of at most 100. False if any frame failed. */
-  function fanOut(own: PinRecord, members: GroupMember[], payload: GroupPayload, messageId: string): boolean {
+  async function fanOut(own: PinRecord, members: GroupMember[], payload: GroupPayload, messageId: string): Promise<boolean> {
     const text = encodeGroupPayload(payload);
-    const envelopes = members.map((m) => {
-      const { nonce, ciphertext } = deps.encrypt(text, m.boxPk, own.boxSk);
-      return { to: m.pin, messageId, nonce: bytesToBase64(nonce), ciphertext: bytesToBase64(ciphertext) };
-    });
+    const envelopes = [];
+    for (const m of members) {
+      const { nonce, ciphertext } = await deps.encrypt(text, m.boxPk, own.boxSk, { ownPin: own.pin, peerPin: m.pin });
+      envelopes.push({ to: m.pin, messageId, nonce: bytesToBase64(nonce), ciphertext: bytesToBase64(ciphertext) });
+    }
     for (let i = 0; i < envelopes.length; i += MAX_BROADCAST_ENVELOPES) {
       const frame = { type: "broadcast", envelopes: envelopes.slice(i, i + MAX_BROADCAST_ENVELOPES) };
       if (!deps.send(own.pin, JSON.stringify(frame))) return false;
@@ -103,7 +105,7 @@ export function createGroupFlow(deps: GroupFlowDeps) {
       for (const pin of unique) {
         const c = await deps.repos.contactRepo.get(ownPin, pin);
         if (!c || c.unavailable) return { ok: false, code: "not_a_contact" };
-        members.push({ pin, displayName: c.displayName, boxPk: c.boxPk });
+        members.push({ pin, displayName: c.displayName, boxPk: c.boxPk, signPk: c.signPk });
       }
       const groupId = newId();
       const res = await deps.createGroupFn(sign(own, "createGroup", { groupId, members: unique }));
@@ -111,7 +113,7 @@ export function createGroupFlow(deps: GroupFlowDeps) {
       const group: GroupRecord = { ownPin, groupId, name: clean, members, createdBy: ownPin, createdAt: now() };
       await deps.repos.groupRepo.put(group);
       deps.groups.upsert(group);
-      fanOut(own, members, { t: "create", g: groupId, name: clean, members: [ownPin, ...unique] }, newId());
+      await fanOut(own, members, { t: "create", g: groupId, name: clean, members: [ownPin, ...unique] }, newId());
       await note(ownPin, groupId, `You made ${clean}.`);
       return { ok: true, group };
     },
@@ -131,7 +133,7 @@ export function createGroupFlow(deps: GroupFlowDeps) {
         kind: "group",
       };
       const sent =
-        deps.isConnected(ownPin) && fanOut(own, group.members, { t: "msg", g: groupId, text }, message.messageId);
+        deps.isConnected(ownPin) && (await fanOut(own, group.members, { t: "msg", g: groupId, text }, message.messageId));
       const saved = sent ? message : { ...message, pending: true };
       deps.chat.addMessage(saved);
       await deps.repos.messageRepo.put(saved);
@@ -150,7 +152,7 @@ export function createGroupFlow(deps: GroupFlowDeps) {
     async leave(ownPin: string, groupId: string): Promise<{ ok: true } | GroupFailure> {
       const [own, group] = await Promise.all([activePin(ownPin), deps.repos.groupRepo.get(ownPin, groupId)]);
       if (!own || !group) return { ok: false, code: "unknown_group" };
-      if (deps.isConnected(ownPin) && fanOut(own, group.members, { t: "leave", g: groupId }, newId())) {
+      if (deps.isConnected(ownPin) && (await fanOut(own, group.members, { t: "leave", g: groupId }, newId()))) {
         await (deps.sleep ?? ((ms) => new Promise<void>((r) => setTimeout(r, ms))))(LEAVE_GRACE_MS);
       }
       const res = await deps.leaveGroupFn(sign(own, "leaveGroup", { groupId }));
@@ -173,7 +175,13 @@ export function createGroupFlow(deps: GroupFlowDeps) {
       const still: string[] = [];
       for (const pin of g.unresolved) {
         const prof = await deps.getPublicProfileFn(pin).catch(() => null);
-        if (prof?.ok) members.push({ pin, displayName: prof.value.displayName, boxPk: base64ToBytes(prof.value.boxPublicKey) });
+        if (prof?.ok)
+          members.push({
+            pin,
+            displayName: prof.value.displayName,
+            boxPk: base64ToBytes(prof.value.boxPublicKey),
+            signPk: base64ToBytes(prof.value.signPublicKey),
+          });
         else if (!prof || (prof.code !== "not_found" && prof.code !== "pin_burned")) still.push(pin); // retry later
       }
       const updated: GroupRecord = { ...g, members };
@@ -220,7 +228,7 @@ export function createGroupFlow(deps: GroupFlowDeps) {
         for (const pin of p.members) {
           if (pin === ownPin) continue;
           const c = await deps.repos.contactRepo.get(ownPin, pin);
-          if (c && !c.unavailable) members.push({ pin, displayName: c.displayName, boxPk: c.boxPk });
+          if (c && !c.unavailable) members.push({ pin, displayName: c.displayName, boxPk: c.boxPk, signPk: c.signPk });
           else unresolved.push(pin);
         }
         // Saved before any network call; the remaining keys are filled in right after.
