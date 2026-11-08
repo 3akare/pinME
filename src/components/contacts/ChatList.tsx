@@ -7,6 +7,7 @@ import { useContactsStore } from "../../client/state/contacts";
 import { useIdentityStore } from "../../client/state/identity";
 import { usePinsStore } from "../../client/state/pins";
 import type { MessageRecord } from "../../client/storage";
+import { InstallItem, NotificationsItem } from "../app/AppMenuItems";
 import { InviteRow } from "../invites/InviteRow";
 import { useInviteResponder } from "../invites/useInviteResponder";
 import { PinShareCard } from "../pins/PinShareCard";
@@ -196,13 +197,15 @@ function MoreMenu() {
         <Icon name="more" />
       </button>
       {open ? (
-        <div id="more-menu" className="absolute right-0 top-full z-[100] mt-1 w-48 rounded-card bg-paper-2 p-1.5 shadow-card">
+        <div id="more-menu" className="absolute right-0 top-full z-[100] mt-1 w-64 rounded-card bg-paper-2 p-1.5 shadow-card">
           <Link to="/pins" className={item}>
             <Icon name="pins" /> My PINs
           </Link>
           <Link to="/broadcast" className={item}>
             <Icon name="broadcast" /> Broadcast
           </Link>
+          <NotificationsItem />
+          <InstallItem />
         </div>
       ) : null}
     </div>

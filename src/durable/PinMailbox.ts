@@ -12,6 +12,7 @@ import { ENVELOPE_TTL_MS, flushOutbox, runOutboxMaintenance, storeEnvelope, type
 import { checkMessageRate, errorFrame, parseFailureFrame } from "./relay";
 import { RateLimiter, type RateLimitResult } from "./ratelimit";
 import { HEARTBEAT_REQUEST, HEARTBEAT_RESPONSE } from "../shared/heartbeat";
+import { isPushEndpoint, PUSH_THROTTLE_MS, sendWakeUp } from "../shared/push";
 import { MAX_BROADCAST_ENVELOPES, PING_RATE_LIMIT, PING_RATE_WINDOW_MS } from "../shared/limits";
 import { processBroadcast, type BroadcastStep } from "./broadcast";
 import {
@@ -29,6 +30,8 @@ export interface PinMailboxDeps {
   randomBytes: (n: number) => Uint8Array;
   /** RPC handle to another PIN's mailbox. */
   mailbox: (pin: string) => MailboxRpc;
+  /** Sends an empty wake-up push; resolves with the push service's status. Null when unconfigured. */
+  push: ((endpoint: string) => Promise<number>) | null;
 }
 /** Result of forwarding an item to the recipient's mailbox. */
 export type DeliverResult = { ok: true; stored: boolean } | { ok: false; error: ErrorCode };
@@ -40,8 +43,23 @@ export interface MailboxRpc {
 }
 const META_PIN = "meta:pin";
 const META_BURNED = "meta:burned";
+const PUSH_ENDPOINT = "push:endpoint";
+const PUSH_LAST = "push:last";
 
-type MailboxEnv = Env & { DATABASE_URL?: string };
+type MailboxEnv = Env & {
+  DATABASE_URL?: string;
+  VAPID_PUBLIC_KEY?: string;
+  VAPID_PRIVATE_KEY?: string;
+  VAPID_SUBJECT?: string;
+};
+
+function pushFromEnv(env: MailboxEnv): PinMailboxDeps["push"] {
+  const publicKey = env.VAPID_PUBLIC_KEY?.trim();
+  const privateKey = env.VAPID_PRIVATE_KEY?.trim();
+  if (!publicKey || !privateKey) return null;
+  const subject = env.VAPID_SUBJECT?.trim() || "mailto:push@pinme.invalid";
+  return (endpoint) => sendWakeUp(endpoint, { publicKey, privateKey, subject }, Date.now());
+}
 
 export class PinMailbox extends DurableObject<MailboxEnv> {
   private readonly deps: PinMailboxDeps;
@@ -55,6 +73,7 @@ export class PinMailbox extends DurableObject<MailboxEnv> {
       now: () => Date.now(),
       randomBytes: (n) => crypto.getRandomValues(new Uint8Array(n)),
       mailbox: (pin) => env.PIN_MAILBOX.get(env.PIN_MAILBOX.idFromName(pin)) as unknown as MailboxRpc,
+      push: pushFromEnv(env),
       ...deps,
     };
     // Client keepalive probes are answered by the runtime without waking this object.
@@ -372,6 +391,7 @@ export class PinMailbox extends DurableObject<MailboxEnv> {
     const rec: StoredEnvelope = { from: item.from, envelope, storedAt: now };
     await storeEnvelope(this.ctx.storage, rec);
     await this.scheduleAlarm(now + ENVELOPE_TTL_MS + 1);
+    this.wakeUp();
     return { ok: true, stored: true };
   }
 
@@ -456,7 +476,10 @@ export class PinMailbox extends DurableObject<MailboxEnv> {
         safeLog("send_failed");
       }
     }
-    if (!delivered) await holdNotice(this.ctx.storage, parsed, this.deps.now(), crypto.randomUUID());
+    if (!delivered) {
+      await holdNotice(this.ctx.storage, parsed, this.deps.now(), crypto.randomUUID());
+      this.wakeUp();
+    }
     return { delivered };
   }
 
@@ -506,6 +529,43 @@ export class PinMailbox extends DurableObject<MailboxEnv> {
     const delivered = this.sendToAuthenticated(JSON.stringify({ type: "contactBurned", pin }));
     if (!delivered) await holdContactBurned(this.ctx.storage, pin, this.deps.now(), crypto.randomUUID());
     return { delivered };
+  }
+
+  /**
+   * RPC (push): stores or clears this PIN's single push endpoint. Endpoints outside the known
+   * push services are refused, so the mailbox never POSTs to an arbitrary URL.
+   */
+  async setPushEndpoint(endpoint: string | null): Promise<{ ok: boolean }> {
+    if (await isBurned(this.ctx.storage)) return { ok: false };
+    if (endpoint === null) {
+      await this.ctx.storage.delete(PUSH_ENDPOINT);
+      return { ok: true };
+    }
+    if (!isPushEndpoint(endpoint)) return { ok: false };
+    await this.ctx.storage.put(PUSH_ENDPOINT, endpoint);
+    return { ok: true };
+  }
+
+  /**
+   * Something is waiting and no socket is authenticated: send one empty wake-up, at most once per
+   * PUSH_THROTTLE_MS. Runs after the response; a gone subscription (404/410) is forgotten.
+   */
+  private wakeUp(): void {
+    const push = this.deps.push;
+    if (!push) return;
+    this.ctx.waitUntil(
+      (async () => {
+        const endpoint = await this.ctx.storage.get<string>(PUSH_ENDPOINT);
+        if (!endpoint) return;
+        const now = this.deps.now();
+        const last = (await this.ctx.storage.get<number>(PUSH_LAST)) ?? 0;
+        if (now - last < PUSH_THROTTLE_MS) return;
+        await this.ctx.storage.put(PUSH_LAST, now);
+        const status = await push(endpoint);
+        if (status === 404 || status === 410) await this.ctx.storage.delete(PUSH_ENDPOINT);
+        else if (status >= 400) safeLog("push_failed");
+      })().catch(() => safeLog("push_failed")),
+    );
   }
 
   /** RPC: the contact set changed, so cached pair verdicts must not be reused. */

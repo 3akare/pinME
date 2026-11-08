@@ -7,6 +7,7 @@ export const SIGNED_ACTIONS = [
   "updateProfile",
   "sendInvite",
   "respondInvite",
+  "registerPush",
 ] as const;
 
 export const SignedActionSchema = z.enum(SIGNED_ACTIONS);

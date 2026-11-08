@@ -18,6 +18,7 @@ The server can see:
 - PINs: which PINs exist, which are burned, pending invites and accepted contact pairs between PINs.
 - Ciphertext sizes.
 - Message timing: when envelopes, delivery and read markers, pings and typing events are sent and to whom.
+- If you turn on notifications: one push endpoint per PIN (from your browser's push service). Each PIN subscribes from its own service-worker scope, so the endpoints of your PINs differ and are not linked to each other. Pushes are empty wake-ups: the push service and the server see when a PIN is woken, never what arrived.
 
 The server cannot see:
 
@@ -41,6 +42,10 @@ Limit: burning cannot erase messages already stored on your contacts' devices. A
 - The server relays your IP address to Cloudflare and the hosting stack as normal for any web service. PinMe does not hide network-level identity.
 - Groups and forward secrecy are optional, post-MVP features and are not provided.
 
+## Notifications (installable app)
+
+PinMe installs as an app (web manifest and service worker). With notifications on, a PIN that has a message or request waiting while you are offline gets one empty wake-up push, at most once a minute, and your device shows "You have a new message or request." The content still only arrives over the encrypted connection when you open the app. On iPhone, notifications work once PinMe is added to the Home Screen.
+
 ## Setup
 
 Requirements: Node.js and pnpm (`packageManager` is `pnpm@10.7.0`), a Neon Postgres database, and a Cloudflare account for deployment.
@@ -56,8 +61,10 @@ pnpm install
 | Name | Purpose |
 | --- | --- |
 | `DATABASE_URL` | Neon Postgres connection string for the Directory. Used by the Worker at runtime and by `drizzle-kit` for migrations. |
+| `VAPID_PRIVATE_KEY` | Secret. Private half (the `d` value, base64url) of the P-256 key pair that signs wake-up pushes. Without it, notifications are simply off. |
+| `VAPID_PUBLIC_KEY`, `VAPID_SUBJECT` | Public vars in `wrangler.jsonc`: the matching public key browsers subscribe with, and a contact URL for push services. |
 
-No other secrets or environment variables are required. Never commit the value.
+No other secrets are required. Never commit the value.
 
 For local development, copy `.dev.vars.example` to `.dev.vars` and set `DATABASE_URL`. For migrations, export it in your shell:
 

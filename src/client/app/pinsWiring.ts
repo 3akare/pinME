@@ -10,6 +10,7 @@ import { burnPinFn } from "../../server/functions/burn";
 import { updateProfileFn } from "../../server/functions/profile";
 import { registerPinFn } from "../../server/functions/pins";
 import { getConnectionManager, getLocalStore } from "./bootstrap";
+import { forgetPush, syncPush } from "./push";
 
 /** Builds PIN-manager dependencies wired to the real server functions, Local_Store and connections. */
 export async function buildManagePinsDeps(): Promise<ManagePinsDeps> {
@@ -24,7 +25,11 @@ export async function buildManagePinsDeps(): Promise<ManagePinsDeps> {
     },
     savePin: (record) => store.pinRepo.put(record),
     connections,
-    onPinChanged: (record) => usePinsStore.getState().addPin(record),
+    onPinChanged: (record) => {
+      usePinsStore.getState().addPin(record);
+      // A new PIN gets its own push endpoint when notifications are already on.
+      void syncPush([record]).catch(() => {});
+    },
   };
 }
 
@@ -52,6 +57,7 @@ export async function buildBurnFlowDeps(
     cleanup: (pin) => cleanupBurnedPin(store, pin),
     closeSession: (pin) => connections.remove(pin),
     updateStores: (pin) => {
+      void forgetPush(pin).catch(() => {});
       usePinsStore.getState().removePin(pin);
       const contacts = useContactsStore.getState();
       contacts.setAll(

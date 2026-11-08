@@ -5,6 +5,11 @@
   "compatibility_flags": ["nodejs_compat"],
   "main": "src/worker.ts",
   "observability": { "enabled": true },
+  // Web Push (wake-up only). The private half is the VAPID_PRIVATE_KEY secret.
+  "vars": {
+    "VAPID_PUBLIC_KEY": "BKEQ_bKUPFHQmYLCrxxFF8pOMU3uHpjCSnVGMFBbYGS9lmbMG_E1pzLRbQqt8Uq1Xbd7irpF4ctrX10tzaPXvSI",
+    "VAPID_SUBJECT": "https://pinme.bakaredavid007.workers.dev"
+  },
   "durable_objects": {
     "bindings": [
       { "name": "PIN_MAILBOX", "class_name": "PinMailbox" },
