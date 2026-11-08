@@ -1,5 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
+import { createBackupFile, downloadFile, MIN_PASSPHRASE } from "../../client/app/backup";
 import { usePinsStore } from "../../client/state/pins";
 import { PIN_FORMAT_MESSAGE } from "../../client/invites/messages";
 import { parseInvite } from "../../shared/scan";
@@ -101,6 +102,86 @@ export function ScanSheet({ onClose }: { onClose: () => void }) {
           {error}
         </p>
         <p className="text-sm text-muted">A typed PIN sends a request they accept, since anyone could type one. Scanning skips that.</p>
+      </form>
+    </Modal>
+  );
+}
+
+/** Encrypted backup of everything on this device, behind a passphrase only the user knows. */
+export function BackupSheet({ onClose }: { onClose: () => void }) {
+  const [pass, setPass] = useState("");
+  const [again, setAgain] = useState("");
+  const [error, setError] = useState<string | undefined>();
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState<string | null>(null);
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (busy) return;
+    if (pass.length < MIN_PASSPHRASE) return setError(`Use at least ${MIN_PASSPHRASE} characters.`);
+    if (pass !== again) return setError("The two passphrases differ.");
+    setError(undefined);
+    setBusy(true);
+    try {
+      const file = await createBackupFile(pass);
+      downloadFile(file);
+      setDone(file.name);
+      setPass("");
+      setAgain("");
+    } catch {
+      setError("Could not create the backup. Try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Modal variant="sheet" labelledBy="backup-title" onDismiss={busy ? undefined : onClose}>
+      <SheetHead id="backup-title" title="Back up" onClose={onClose} />
+      <p className="text-ink-2">
+        Your keys and chats live only on this device. A backup is one encrypted file you keep; restore it on a new device
+        with the passphrase.
+      </p>
+      <p className="mt-3 text-sm text-muted">
+        Anyone with the file and the passphrase can read your chats and use your PINs. Without the passphrase it cannot be
+        opened, by anyone, including us.
+      </p>
+      <form onSubmit={onSubmit} noValidate className="mt-5 flex flex-col gap-3">
+        <label htmlFor="backup-pass" className="text-sm font-medium text-ink-2">
+          Passphrase
+        </label>
+        <input
+          id="backup-pass"
+          type="password"
+          autoComplete="new-password"
+          value={pass}
+          onChange={(e) => setPass(e.target.value)}
+          aria-describedby="backup-error"
+          className="field"
+        />
+        <label htmlFor="backup-again" className="text-sm font-medium text-ink-2">
+          Passphrase again
+        </label>
+        <input
+          id="backup-again"
+          type="password"
+          autoComplete="new-password"
+          value={again}
+          onChange={(e) => setAgain(e.target.value)}
+          aria-describedby="backup-error"
+          className="field"
+        />
+        <p id="backup-error" role="alert" aria-live="assertive" className="min-h-5 text-sm text-error">
+          {error}
+        </p>
+        {done ? (
+          <p role="status" className="text-sm text-success">
+            Saved as {done}. Keep it somewhere other than this device.
+          </p>
+        ) : null}
+        <button type="submit" disabled={busy} aria-busy={busy || undefined} className="btn btn--primary self-start">
+          {busy ? "Encrypting…" : "Download backup"}
+        </button>
       </form>
     </Modal>
   );

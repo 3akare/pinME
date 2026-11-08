@@ -3,9 +3,9 @@ import { useShakeStore } from "../../client/net/handlers/ping";
 import { ChatView } from "../chat/ChatView";
 import { ChatList } from "../contacts/ChatList";
 import { Ghost } from "../ui/Ghost";
-import { MyCodeSheet, ScanSheet } from "./Sheets";
+import { BackupSheet, MyCodeSheet, ScanSheet } from "./Sheets";
 
-export type SheetName = "code" | "scan";
+export type SheetName = "code" | "scan" | "backup";
 
 export interface AppShellProps {
   /** Contact PIN of the open chat; without one the list fills the phone screen. */
@@ -25,7 +25,12 @@ export function AppShell({ chatPin, initialSheet }: AppShellProps) {
         aria-label="Chats"
         className={`${chatOpen ? "hidden md:flex" : "flex"} w-full shrink-0 flex-col border-rule md:w-[380px] md:border-r`}
       >
-        <ChatList selected={chatPin} onScan={() => setSheet("scan")} onMyCode={() => setSheet("code")} />
+        <ChatList
+          selected={chatPin}
+          onScan={() => setSheet("scan")}
+          onMyCode={() => setSheet("code")}
+          onBackup={() => setSheet("backup")}
+        />
       </aside>
       <main className={`${chatOpen ? "flex" : "hidden md:flex"} min-w-0 flex-1 flex-col bg-paper${shaking && chatOpen ? " pinme-shake" : ""}`}>
         {chatPin ? (
@@ -39,6 +44,7 @@ export function AppShell({ chatPin, initialSheet }: AppShellProps) {
       </main>
       {sheet === "code" ? <MyCodeSheet onClose={() => setSheet(null)} /> : null}
       {sheet === "scan" ? <ScanSheet onClose={() => setSheet(null)} /> : null}
+      {sheet === "backup" ? <BackupSheet onClose={() => setSheet(null)} /> : null}
     </div>
   );
 }

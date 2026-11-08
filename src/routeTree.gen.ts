@@ -15,6 +15,7 @@ import { Route as BroadcastRouteImport } from './routes/broadcast'
 import { Route as EchoRouteImport } from './routes/echo'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PinsRouteImport } from './routes/pins'
+import { Route as RestoreRouteImport } from './routes/restore'
 import { Route as ChatPinRouteImport } from './routes/chat.$pin'
 import { Route as IPinRouteImport } from './routes/i.$pin'
 
@@ -48,6 +49,11 @@ const PinsRoute = PinsRouteImport.update({
   path: '/pins',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RestoreRoute = RestoreRouteImport.update({
+  id: '/restore',
+  path: '/restore',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ChatPinRoute = ChatPinRouteImport.update({
   id: '/chat/$pin',
   path: '/chat/$pin',
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/echo': typeof EchoRoute
   '/onboarding': typeof OnboardingRoute
   '/pins': typeof PinsRoute
+  '/restore': typeof RestoreRoute
   '/chat/$pin': typeof ChatPinRoute
   '/i/$pin': typeof IPinRoute
 }
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/echo': typeof EchoRoute
   '/onboarding': typeof OnboardingRoute
   '/pins': typeof PinsRoute
+  '/restore': typeof RestoreRoute
   '/chat/$pin': typeof ChatPinRoute
   '/i/$pin': typeof IPinRoute
 }
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/echo': typeof EchoRoute
   '/onboarding': typeof OnboardingRoute
   '/pins': typeof PinsRoute
+  '/restore': typeof RestoreRoute
   '/chat/$pin': typeof ChatPinRoute
   '/i/$pin': typeof IPinRoute
 }
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/echo'
     | '/onboarding'
     | '/pins'
+    | '/restore'
     | '/chat/$pin'
     | '/i/$pin'
   fileRoutesByTo: FileRoutesByTo
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
     | '/echo'
     | '/onboarding'
     | '/pins'
+    | '/restore'
     | '/chat/$pin'
     | '/i/$pin'
   id:
@@ -119,6 +130,7 @@ export interface FileRouteTypes {
     | '/echo'
     | '/onboarding'
     | '/pins'
+    | '/restore'
     | '/chat/$pin'
     | '/i/$pin'
   fileRoutesById: FileRoutesById
@@ -130,6 +142,7 @@ export interface RootRouteChildren {
   EchoRoute: typeof EchoRoute
   OnboardingRoute: typeof OnboardingRoute
   PinsRoute: typeof PinsRoute
+  RestoreRoute: typeof RestoreRoute
   ChatPinRoute: typeof ChatPinRoute
   IPinRoute: typeof IPinRoute
 }
@@ -178,6 +191,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PinsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/restore': {
+      id: '/restore'
+      path: '/restore'
+      fullPath: '/restore'
+      preLoaderRoute: typeof RestoreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/chat/$pin': {
       id: '/chat/$pin'
       path: '/chat/$pin'
@@ -202,6 +222,7 @@ const rootRouteChildren: RootRouteChildren = {
   EchoRoute: EchoRoute,
   OnboardingRoute: OnboardingRoute,
   PinsRoute: PinsRoute,
+  RestoreRoute: RestoreRoute,
   ChatPinRoute: ChatPinRoute,
   IPinRoute: IPinRoute,
 }

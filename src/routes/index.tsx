@@ -6,7 +6,7 @@ import { Landing } from "../components/landing/Landing";
 export const Route = createFileRoute("/")({
   // `?sheet=code` opens My code (after onboarding); `?sheet=scan` opens the scanner.
   validateSearch: (search: Record<string, unknown>): { sheet?: SheetName } =>
-    search.sheet === "code" || search.sheet === "scan" ? { sheet: search.sheet } : {},
+    search.sheet === "code" || search.sheet === "scan" || search.sheet === "backup" ? { sheet: search.sheet } : {},
   component: Home,
 });
 

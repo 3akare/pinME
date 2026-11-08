@@ -20,10 +20,11 @@ export interface ChatListProps {
   selected?: string;
   onScan: () => void;
   onMyCode: () => void;
+  onBackup: () => void;
 }
 
 /** The left pane: who you are, how to connect, requests, and every chat of the active PIN. */
-export function ChatList({ selected, onScan, onMyCode }: ChatListProps) {
+export function ChatList({ selected, onScan, onMyCode, onBackup }: ChatListProps) {
   const navigate = useNavigate();
   const identity = useIdentityStore((s) => s.identity);
   const pins = usePinsStore((s) => s.pins);
@@ -102,7 +103,7 @@ export function ChatList({ selected, onScan, onMyCode }: ChatListProps) {
         <button type="button" onClick={onMyCode} aria-label="My code" title="My code" className="icon-btn">
           <Icon name="qr" />
         </button>
-        <MoreMenu />
+        <MoreMenu onBackup={onBackup} />
       </header>
 
       {status !== "connected" && activePin ? (
@@ -164,7 +165,7 @@ export function ChatList({ selected, onScan, onMyCode }: ChatListProps) {
 }
 
 /** Less frequent destinations behind one button. */
-function MoreMenu() {
+function MoreMenu({ onBackup }: { onBackup: () => void }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -204,6 +205,16 @@ function MoreMenu() {
           <Link to="/broadcast" className={item}>
             <Icon name="broadcast" /> Broadcast
           </Link>
+          <button
+            type="button"
+            className={`${item} w-full text-left`}
+            onClick={() => {
+              setOpen(false);
+              onBackup();
+            }}
+          >
+            <Icon name="install" className="h-5 w-5 rotate-180" /> Back up
+          </button>
           <NotificationsItem />
           <InstallItem />
         </div>

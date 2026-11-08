@@ -37,7 +37,7 @@ Limit: burning cannot erase messages already stored on your contacts' devices. A
 
 - No forward secrecy (see above). Later key compromise exposes previously captured ciphertext.
 - The server sees metadata: PINs, contact relationships, ciphertext sizes and timing.
-- Private keys and message history live only in the browser's IndexedDB. Clearing browser data or losing the device loses them, and there is no server-side backup or recovery.
+- Private keys and message history live only in the browser's IndexedDB. Clearing browser data or losing the device loses them unless you made a backup (More > Back up): a file encrypted with your passphrase (PBKDF2-SHA-256, 600,000 iterations, AES-256-GCM) that you keep yourself. There is no server-side backup, and a lost passphrase cannot be recovered. A backup restores only onto a device without an identity, and messages that arrived after it are not in it.
 - Burning does not delete messages already on contacts' devices.
 - The server relays your IP address to Cloudflare and the hosting stack as normal for any web service. PinMe does not hide network-level identity.
 - Groups and forward secrecy are optional, post-MVP features and are not provided.

@@ -130,6 +130,12 @@ function Onboarding() {
               {busy ? "Creating…" : "Create my PIN"}
             </button>
           </form>
+          <p className="mt-10 text-sm text-muted">
+            Moving from another device?{" "}
+            <Link to="/restore" className="link">
+              Restore a backup
+            </Link>
+          </p>
         </div>
       </div>
     </main>
