@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "pinme",
+  "compatibility_date": "2026-11-08",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "src/worker.ts",
+  "observability": { "enabled": true },
+  "durable_objects": {
+    "bindings": [
+      { "name": "PIN_MAILBOX", "class_name": "PinMailbox" },
+      { "name": "ECHO_DO", "class_name": "EchoDO" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["PinMailbox", "EchoDO"] }
+  ]
+}

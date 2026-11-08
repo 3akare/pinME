@@ -1,0 +1,11 @@
+node_modules
+dist
+.wrangler
+.dev.vars
+.output
+.tanstack
+worker-configuration.d.ts
+*.log
+test-results
+playwright-report
+.env

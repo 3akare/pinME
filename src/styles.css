@@ -1,0 +1,26 @@
+@import "tailwindcss";
+@import "./styles/shake.css";
+@import "./styles/ghost.css";
+
+/* Baseline dark theme with blue accent.
+   Contrast ratios against --color-bg (#0b1220):
+   text #e6edf7 ~15:1, muted #9fb0c8 ~8:1, accent #5b9bff ~6.4:1 */
+@theme {
+  --color-bg: #0b1220;
+  --color-surface: #131c2e;
+  --color-border: #2a3a57;
+  --color-text: #e6edf7;
+  --color-muted: #9fb0c8;
+  --color-accent: #5b9bff;
+  --color-accent-strong: #2f6fe0; /* white text 4.7:1 */
+  --color-accent-hover: #8dbaff; /* on-accent text ~9:1 */
+  --color-on-accent: #07101f;
+}
+
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  color-scheme: dark;
+}

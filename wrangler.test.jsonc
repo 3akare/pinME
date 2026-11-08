@@ -1,0 +1,13 @@
+{
+  "name": "pinme-test",
+  "compatibility_date": "2026-11-08",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "test/workers/test-entry.ts",
+  "durable_objects": {
+    "bindings": [
+      { "name": "ECHO_DO", "class_name": "EchoDO" },
+      { "name": "PIN_MAILBOX", "class_name": "TestPinMailbox" }
+    ]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["EchoDO", "TestPinMailbox"] }]
+}

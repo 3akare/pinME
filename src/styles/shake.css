@@ -1,0 +1,16 @@
+/* Chat window shake for an incoming PING (Req 9.2). Runs for 1 s. */
+@keyframes pinme-shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 50%, 90% { transform: translateX(-8px); }
+  30%, 70% { transform: translateX(8px); }
+}
+
+.pinme-shake {
+  animation: pinme-shake 1s linear 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pinme-shake {
+    animation: none;
+  }
+}

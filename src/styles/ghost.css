@@ -1,0 +1,29 @@
+.pinme-ghost-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 0 0 / 0.7);
+  pointer-events: all;
+}
+.pinme-ghost {
+  font-size: 5rem;
+  line-height: 1;
+  animation: pinme-ghost-rise 1.6s ease-in forwards;
+}
+@keyframes pinme-ghost-rise {
+  0% { opacity: 0; transform: translateY(40px) scale(0.8); }
+  25% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-160px) scale(1.2); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pinme-ghost {
+    animation: pinme-ghost-fade 0.3s linear forwards;
+  }
+  @keyframes pinme-ghost-fade {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+}

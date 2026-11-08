@@ -1,0 +1,2011 @@
+{
+  "pbtResults": {
+    "1.6 Write property test for WebSocket routing": {
+      "status": "passed",
+      "lastRunTimestamp": 1794157587846
+    },
+    "1.7 Write property test for reconnect backoff": {
+      "status": "passed",
+      "lastRunTimestamp": 1794157592588
+    },
+    "2.4 Write property test for delivery marker monotonicity": {
+      "status": "passed",
+      "lastRunTimestamp": 1794157594233
+    },
+    "2.2 Write property test for PIN generation format": {
+      "status": "passed",
+      "lastRunTimestamp": 1794157594334
+    },
+    "2.3 Write property test for text field validation": {
+      "status": "passed",
+      "lastRunTimestamp": 1794157602917
+    },
+    "4.5 Write property test for per-PIN key uniqueness": {
+      "status": "passed",
+      "lastRunTimestamp": 1794157662946
+    },
+    "2.9 Write property test for canonical encoding injectivity": {
+      "status": "passed",
+      "lastRunTimestamp": 1794158132978
+    },
+    "2.7 Write property test for protocol validation": {
+      "status": "passed",
+      "lastRunTimestamp": 1794158151377
+    },
+    "2.8 Write property test for protocol round trip": {
+      "status": "passed",
+      "lastRunTimestamp": 1794158159861
+    },
+    "6.5 Write property test for pair removal": {
+      "status": "passed",
+      "lastRunTimestamp": 1794158256824
+    },
+    "6.4 Write property test for the sliding-window rate limiter": {
+      "status": "passed",
+      "lastRunTimestamp": 1794158258935
+    },
+    "13.5 Write property test for barcode round trip": {
+      "status": "passed",
+      "lastRunTimestamp": 1794158262662
+    },
+    "13.4 Write property test for scan classification": {
+      "status": "passed",
+      "lastRunTimestamp": 1794158264335
+    },
+    "5.4 Write property test for encryption round trip": {
+      "status": "passed",
+      "lastRunTimestamp": 1794158343607
+    },
+    "5.5 Write property test for nonce freshness": {
+      "status": "passed",
+      "lastRunTimestamp": 1794158518130
+    },
+    "5.6 Write property test for challenge signature verification": {
+      "status": "passed",
+      "lastRunTimestamp": 1794158570093
+    },
+    "3.4 Write property test for registration validity and collision safety": {
+      "status": "passed",
+      "lastRunTimestamp": 1794158673155
+    },
+    "3.5 Write property test for private key field rejection": {
+      "status": "passed",
+      "lastRunTimestamp": 1794158685383
+    },
+    "5.7 Write property test for signed request verification outcome": {
+      "status": "passed",
+      "lastRunTimestamp": 1794158694287
+    },
+    "5.8 Write property test for tamper detection": {
+      "status": "passed",
+      "lastRunTimestamp": 1794158708672
+    },
+    "6.7 Write property test that unauthenticated sockets are inert": {
+      "status": "passed",
+      "lastRunTimestamp": 1794158780360
+    },
+    "6.6 Write property test for challenge uniqueness and size": {
+      "status": "passed",
+      "lastRunTimestamp": 1794158798057
+    },
+    "4.6 Write property test for registration retry bound": {
+      "status": "passed",
+      "lastRunTimestamp": 1794159288645
+    },
+    "7.5 Write property test for invite decisions and transitions": {
+      "status": "passed",
+      "lastRunTimestamp": 1794159315645
+    },
+    "8.4 Write property test for mailbox store-and-forward": {
+      "status": "passed",
+      "lastRunTimestamp": 1794159625416
+    },
+    "8.6 Write property test for envelope expiry and deletion retry": {
+      "status": "passed",
+      "lastRunTimestamp": 1794159663321
+    },
+    "8.5 Write property test for the contacts-only relay gate": {
+      "status": "passed",
+      "lastRunTimestamp": 1794159966598
+    },
+    "12.6 Write property test for PIN count limit": {
+      "status": "passed",
+      "lastRunTimestamp": 1794160312480
+    },
+    "11.6 Write property test for presence retention": {
+      "status": "passed",
+      "lastRunTimestamp": 1794161245869
+    },
+    "8.7 Write property test that failed decryption leaves no trace": {
+      "status": "passed",
+      "lastRunTimestamp": 1794161301766
+    },
+    "11.7 Write property test for broadcast processing": {
+      "status": "passed",
+      "lastRunTimestamp": 1794161555538
+    },
+    "9.4 Write property test for typing throttle": {
+      "status": "passed",
+      "lastRunTimestamp": 1794161930072
+    },
+    "11.8 Write property test for broadcast construction": {
+      "status": "passed",
+      "lastRunTimestamp": 1794161949237
+    },
+    "9.5 Write property test for typing indicator visibility": {
+      "status": "passed",
+      "lastRunTimestamp": 1794162080013
+    },
+    "12.8 Write property test for burn idempotence": {
+      "status": "passed",
+      "lastRunTimestamp": 1794162168252
+    },
+    "12.7 Write property test for burn directory effects": {
+      "status": "passed",
+      "lastRunTimestamp": 1794162170513
+    },
+    "12.9 Write property test that a burned PIN is unreachable": {
+      "status": "passed",
+      "lastRunTimestamp": 1794162243365
+    },
+    "12.10 Write property test for scoped local burn cleanup": {
+      "status": "passed",
+      "lastRunTimestamp": 1794162838373
+    },
+    "12.11 Write property test for contact marked unavailable on burn": {
+      "status": "passed",
+      "lastRunTimestamp": 1794162913122
+    }
+  },
+  "executionHistory": {
+    "1.1 Scaffold the project": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156335447
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156356694
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157061284
+      }
+    ],
+    "1.2 Add the Worker entry and echo Durable Object": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156335694
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157067069
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157362718
+      }
+    ],
+    "1.3 Add reconnecting WebSocket helper and echo page": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156335879
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157067206
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157362981
+      }
+    ],
+    "1.4 Create the steering files under `.kiro/steering`": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156336079
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156357144
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157061454
+      }
+    ],
+    "1.5 Add ESLint import restrictions": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156336262
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157067397
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157363559
+      }
+    ],
+    "1.6 Write property test for WebSocket routing": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156336406
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157553347
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157612779
+      }
+    ],
+    "1.7 Write property test for reconnect backoff": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156336541
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157553523
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157612937
+      }
+    ],
+    "1.8 Write integration test for the echo Durable Object": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156336736
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157620511
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157946677
+      }
+    ],
+    "2.1 Implement shared constants and pure helpers": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156336929
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157067981
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157364227
+      }
+    ],
+    "2.2 Write property test for PIN generation format": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156337161
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157553801
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157613308
+      }
+    ],
+    "2.3 Write property test for text field validation": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156337299
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157554424
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157614115
+      }
+    ],
+    "2.4 Write property test for delivery marker monotonicity": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156337421
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157555035
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157614633
+      }
+    ],
+    "2.5 Implement protocol Zod schemas and error codes": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156337530
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157620937
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157947029
+      }
+    ],
+    "2.6 Implement canonical encoding and Signed_Request schema": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156337729
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157621501
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157948049
+      }
+    ],
+    "2.7 Write property test for protocol validation": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156337893
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158088757
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158172425
+      }
+    ],
+    "2.8 Write property test for protocol round trip": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156338031
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158089469
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158173136
+      }
+    ],
+    "2.9 Write property test for canonical encoding injectivity": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156338156
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158089988
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158173977
+      }
+    ],
+    "3.1 Implement Drizzle schema, DB client and migrations": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156338272
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158088095
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158174625
+      }
+    ],
+    "3.2 Implement directory service and private-key guard": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156338390
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158285907
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158479806
+      }
+    ],
+    "3.3 Expose `registerPin` and `getPublicProfile` as server functions": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156338574
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158585276
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158728311
+      }
+    ],
+    "3.4 Write property test for registration validity and collision safety": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156338766
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158585492
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158728947
+      }
+    ],
+    "3.5 Write property test for private key field rejection": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156338928
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158585988
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158729820
+      }
+    ],
+    "3.6 Write unit tests for DB configuration and schema": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156339130
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158737915
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158963840
+      }
+    ],
+    "4.1 Create the minimal Crypto_Module": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156339259
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157068810
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157364987
+      }
+    ],
+    "4.2 Implement the Local_Store": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156339382
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157369716
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157546236
+      }
+    ],
+    "4.3 Implement PIN creation with registration retry": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156339499
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158973951
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794159244995
+      }
+    ],
+    "4.4 Build the onboarding flow and identity/PIN stores": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156339615
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794159254038
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794159420394
+      }
+    ],
+    "4.5 Write property test for per-PIN key uniqueness": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156339746
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157621695
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157948573
+      }
+    ],
+    "4.6 Write property test for registration retry bound": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156339959
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794159254152
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794159420545
+      }
+    ],
+    "4.7 Write unit tests for the onboarding form": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156340144
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794159996998
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794160239493
+      }
+    ],
+    "5.1 Implement WebCrypto Ed25519 verify and signature helpers": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156340358
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157369839
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157545614
+      }
+    ],
+    "5.2 Complete the Crypto_Module": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156340564
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158088273
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158175653
+      }
+    ],
+    "5.3 Implement signed-request verification": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156340723
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158286536
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158480620
+      }
+    ],
+    "5.4 Write property test for encryption round trip": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156340944
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158288608
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158481344
+      }
+    ],
+    "5.5 Write property test for nonce freshness": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156341144
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158487431
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158578750
+      }
+    ],
+    "5.6 Write property test for challenge signature verification": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156341326
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158487543
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158579445
+      }
+    ],
+    "5.7 Write property test for signed request verification outcome": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156341638
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158587057
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158730452
+      }
+    ],
+    "5.8 Write property test for tamper detection": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156341770
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158587445
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158731313
+      }
+    ],
+    "5.9 Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156341894
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794163736327
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794164190311
+      }
+    ],
+    "6.1 Implement rate limiter and pair cache": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156342013
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157622520
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157949487
+      }
+    ],
+    "6.2 Implement PinMailbox connection and handshake": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156342154
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158287315
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158482184
+      }
+    ],
+    "6.3 Implement client handshake and message dispatch": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156342263
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158288035
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158479509
+      }
+    ],
+    "6.4 Write property test for the sliding-window rate limiter": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156342378
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158190566
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158277403
+      }
+    ],
+    "6.5 Write property test for pair removal": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156342480
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158190683
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158276996
+      }
+    ],
+    "6.6 Write property test for challenge uniqueness and size": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156342592
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158737803
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158964584
+      }
+    ],
+    "6.7 Write property test that unauthenticated sockets are inert": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156342713
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158738192
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158965550
+      }
+    ],
+    "6.8 Write integration tests for the handshake": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156342813
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158738919
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158966209
+      }
+    ],
+    "7.1 Add invite support to PinMailbox": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156342947
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158739487
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158967002
+      }
+    ],
+    "7.2 Implement invite server functions": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156343063
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158973753
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794159245860
+      }
+    ],
+    "7.3 Implement client invite flow and contact store": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156343194
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794159997799
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794160240490
+      }
+    ],
+    "7.4 Build home contact list and add-contact UI": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156343327
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794160248045
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794160560386
+      }
+    ],
+    "7.5 Write property test for invite decisions and transitions": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156343446
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794159254378
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794159421039
+      }
+    ],
+    "7.6 Write integration test for the invite flow": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156343570
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794159428990
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794159990716
+      }
+    ],
+    "7.7 Write unit tests for contact list UI": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156343690
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161177361
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161388750
+      }
+    ],
+    "8.1 Implement message relay and outbox in PinMailbox": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156343828
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158974743
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794159246203
+      }
+    ],
+    "8.2 Implement client send and receive pipeline": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156344037
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794160248329
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794160561076
+      }
+    ],
+    "8.3 Build the chat UI": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156344161
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794160570844
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161169533
+      }
+    ],
+    "8.4 Write property test for mailbox store-and-forward": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156344277
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794159429189
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794159990850
+      }
+    ],
+    "8.5 Write property test for the contacts-only relay gate": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156344397
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794159429319
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794159991698
+      }
+    ],
+    "8.6 Write property test for envelope expiry and deletion retry": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156344515
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794159430233
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794159992407
+      }
+    ],
+    "8.7 Write property test that failed decryption leaves no trace": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156344637
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161178015
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161387800
+      }
+    ],
+    "8.8 Write unit tests for chat UI": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156344759
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161753855
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161854726
+      }
+    ],
+    "8.9 Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156344863
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794164199063
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794164360858
+      }
+    ],
+    "9.1 Add receipts and typing relay to PinMailbox": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156344979
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794159254526
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794159421836
+      }
+    ],
+    "9.2 Implement client receipts": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156345156
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794160570954
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161169663
+      }
+    ],
+    "9.3 Implement typing indicator": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156345313
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161395497
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161744902
+      }
+    ],
+    "9.4 Write property test for typing throttle": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156345428
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161861724
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162089687
+      }
+    ],
+    "9.5 Write property test for typing indicator visibility": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156345561
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161863208
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162090460
+      }
+    ],
+    "10.1 Add ping handling to PinMailbox": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156345668
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794159998550
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794160239340
+      }
+    ],
+    "10.2 Implement client PING": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156345761
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161863377
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162089049
+      }
+    ],
+    "10.3 Write unit tests for client PING": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156346014
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162097056
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162790455
+      }
+    ],
+    "11.1 Implement profile update server function": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156346109
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794159254637
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794159422525
+      }
+    ],
+    "11.2 Add presence retention to PinMailbox": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156346239
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794160248806
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794160561876
+      }
+    ],
+    "11.3 Implement broadcast processing in PinMailbox": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156346353
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794160571130
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161170365
+      }
+    ],
+    "11.4 Implement client status and personal message editing": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156346471
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794160571774
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161171462
+      }
+    ],
+    "11.5 Implement client broadcast": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156346607
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161395649
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161745191
+      }
+    ],
+    "11.6 Write property test for presence retention": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156346739
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161178848
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161386951
+      }
+    ],
+    "11.7 Write property test for broadcast processing": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156346855
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161398053
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161746321
+      }
+    ],
+    "11.8 Write property test for broadcast construction": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156346977
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161864575
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162091298
+      }
+    ],
+    "12.1 Implement multi-PIN management on the client": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156347089
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794159999202
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794160241587
+      }
+    ],
+    "12.2 Build the PIN manager UI": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156347203
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161396402
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161744318
+      }
+    ],
+    "12.3 Implement burn in PinMailbox": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156347310
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161397349
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161743908
+      }
+    ],
+    "12.4 Implement burn server function": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156347420
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161865226
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162088909
+      }
+    ],
+    "12.5 Implement client burn flow and ghost animation": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156347542
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162098022
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162789944
+      }
+    ],
+    "12.6 Write property test for PIN count limit": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156347667
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794160249771
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794160562527
+      }
+    ],
+    "12.7 Write property test for burn directory effects": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156347869
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162098849
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162790148
+      }
+    ],
+    "12.8 Write property test for burn idempotence": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156347975
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162099705
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162790298
+      }
+    ],
+    "12.9 Write property test that a burned PIN is unreachable": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156348093
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162100400
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162790592
+      }
+    ],
+    "12.10 Write property test for scoped local burn cleanup": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156348283
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162796475
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162924823
+      }
+    ],
+    "12.11 Write property test for contact marked unavailable on burn": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156348432
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162797308
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162925620
+      }
+    ],
+    "12.12 Write unit tests for the burn dialog and failures": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156348538
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162799119
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162925971
+      }
+    ],
+    "12.13 Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156348655
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794164366657
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794164505292
+      }
+    ],
+    "13.1 Implement Barcode component and scan classifier": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156348772
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157955410
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158081090
+      }
+    ],
+    "13.2 Implement the scanner": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156348930
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794160572375
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161172261
+      }
+    ],
+    "13.3 Wire the Barcode into onboarding and PIN detail": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156349094
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162799236
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162924071
+      }
+    ],
+    "13.4 Write property test for scan classification": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156349318
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158191274
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158278285
+      }
+    ],
+    "13.5 Write property test for barcode round trip": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156349468
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158192009
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158276704
+      }
+    ],
+    "13.6 Write unit tests for the scanner": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156349568
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161753980
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161855476
+      }
+    ],
+    "14.1 Polish theme, responsiveness and branding": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156349667
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162931945
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794163317908
+      }
+    ],
+    "14.2 Write the README": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156349778
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162932071
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794163318179
+      }
+    ],
+    "14.3 Write Playwright two-window demo test": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156349878
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794163324892
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794163729739
+      }
+    ],
+    "14.4 Write config, README and contrast smoke tests": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156349979
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794163325267
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794163729894
+      }
+    ],
+    "14.5 Final checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794156350088
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794164510735
+      },
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794164680638
+      }
+    ],
+    "1. Scaffold TanStack Start on Cloudflare, echo Durable Object, steering and lint rules": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794157946788
+      }
+    ],
+    "2. Shared protocol schemas and types": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158174124
+      }
+    ],
+    "3. Neon schema and server functions for PIN registration and key lookup": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158964043
+      }
+    ],
+    "6. PinMailbox with signed-challenge handshake": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794158966332
+      }
+    ],
+    "4. Client onboarding, identity, first PIN, keygen and IndexedDB": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794160239791
+      }
+    ],
+    "7. Invites and contact list": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794161389054
+      }
+    ],
+    "9. D/R receipts and typing indicator": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162090712
+      }
+    ],
+    "11. Status, personal message and broadcast": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162091513
+      }
+    ],
+    "10. PING with rate limiting": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162790725
+      }
+    ],
+    "13. QR barcode show and scan": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794162924472
+      }
+    ],
+    "5. Crypto helpers with tests": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794164190664
+      }
+    ],
+    "8. Real-time encrypted chat with offline storage in the DO": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794164361198
+      }
+    ],
+    "12. Multiple PINs, PIN manager and burn flow with ghost animation": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794164505643
+      }
+    ],
+    "14. Polish, README and two-window demo check": [
+      {
+        "executionId": "aeec8adf-3ced-4200-88a4-f3c092b84d04",
+        "chatSessionId": "sess_23c22aec-d8e2-4823-b4e7-6b220ae7dede",
+        "timestamp": 1794164680883
+      }
+    ]
+  }
+}
