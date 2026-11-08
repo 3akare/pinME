@@ -1,5 +1,6 @@
 import { bytesToBase64 } from "../../shared/base64";
 import { generatePin } from "../../shared/pin";
+import { newInviteToken } from "../../shared/scan";
 import type { ErrorCode } from "../../shared/protocol";
 import type { PinKeys } from "../crypto";
 import type { PinRecord } from "../storage";
@@ -70,6 +71,7 @@ export async function createPin(deps: CreatePinDeps, input: CreatePinInput): Pro
         status: "active",
         personalMessage: "",
         createdAt: (deps.now ?? Date.now)(),
+        inviteToken: newInviteToken(deps.randomBytes),
       };
       await deps.savePin(record);
       return record;

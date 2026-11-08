@@ -1,28 +1,6 @@
-import { useEffect, useState } from "react";
-import type { ContactRecord } from "../../client/storage";
-
-/** Default placeholder picture: original artwork, first letter on a blue disc. */
-function Avatar({ name, picture }: { name: string; picture?: Blob }) {
-  const [url, setUrl] = useState<string | null>(null);
-  useEffect(() => {
-    if (!picture) return;
-    const u = URL.createObjectURL(picture);
-    setUrl(u);
-    return () => URL.revokeObjectURL(u);
-  }, [picture]);
-  if (url) {
-    return <img src={url} alt="" className="h-12 w-12 shrink-0 rounded-full object-cover" />;
-  }
-  return (
-    <span
-      aria-hidden="true"
-      data-testid="avatar-placeholder"
-      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent-strong text-lg font-bold text-white"
-    >
-      {name.trim().charAt(0).toUpperCase() || "?"}
-    </span>
-  );
-}
+import { formatListTime } from "../../client/chat/format";
+import type { ContactRecord, MessageRecord } from "../../client/storage";
+import { Avatar } from "../ui/Avatar";
 
 export type DotState = "available" | "busy" | "unknown" | "unavailable";
 
@@ -42,7 +20,7 @@ export function dotStateFor(contact: Pick<ContactRecord, "presence" | "unavailab
 export function StatusDot({ state }: { state: DotState }) {
   // Distinct by color and shape: green disc, red ring with a bar, hollow grey ring, grey ring with a cross bar.
   const shape: Record<DotState, string> = {
-    available: "inline-block h-3 w-3 shrink-0 rounded-full bg-green-400",
+    available: "inline-block h-3 w-3 shrink-0 rounded-full bg-green-400 ring-2 ring-surface",
     busy: "inline-flex h-3 w-3 shrink-0 items-center justify-center rounded-full border-2 border-red-400 bg-bg",
     unknown: "inline-block h-3 w-3 shrink-0 rounded-full border-2 border-muted bg-bg",
     unavailable: "inline-flex h-3 w-3 shrink-0 items-center justify-center rounded-full border-2 border-muted bg-bg",
@@ -58,24 +36,54 @@ export function StatusDot({ state }: { state: DotState }) {
 export interface ContactRowProps {
   contact: ContactRecord;
   onOpen: (contactPin: string) => void;
+  /** Latest message of the conversation, shown instead of the personal message. */
+  last?: MessageRecord;
+  unread?: number;
+  selected?: boolean;
 }
 
-export function ContactRow({ contact, onOpen }: ContactRowProps) {
+/** One chat in the list: avatar with status, name, time, last message and unread count. */
+export function ContactRow({ contact, onOpen, last, unread = 0, selected }: ContactRowProps) {
+  const preview = last
+    ? `${last.direction === "out" ? "You: " : ""}${last.text}`
+    : contact.unavailable
+      ? "No longer available"
+      : contact.personalMessage;
   return (
     <button
       type="button"
       onClick={() => onOpen(contact.contactPin)}
-      className="flex h-16 w-full items-center gap-3 rounded-2xl border border-border bg-surface px-3 text-left hover:border-accent focus-visible:outline-2 focus-visible:outline-accent"
+      aria-current={selected ? "true" : undefined}
+      className={`flex h-[72px] w-full items-center gap-3 rounded-2xl px-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-accent ${
+        selected ? "bg-elevated" : "hover:bg-elevated/60"
+      }`}
     >
-      <Avatar name={contact.displayName} picture={contact.picture} />
-      <span className="flex min-w-0 flex-1 flex-col">
-        <span className="flex items-center gap-2">
+      <span className="relative">
+        <Avatar name={contact.displayName} picture={contact.picture} />
+        <span className="absolute -bottom-0.5 -right-0.5 flex">
           <StatusDot state={dotStateFor(contact)} />
-          <span className="truncate font-semibold text-text">{contact.displayName}</span>
-          {contact.unavailable ? <span className="text-xs text-muted">(unavailable)</span> : null}
         </span>
-        <span data-testid="personal-message" className="truncate whitespace-nowrap text-sm text-muted">
-          {contact.personalMessage}
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="flex items-baseline gap-2">
+          <span className={`truncate font-semibold ${contact.unavailable ? "text-muted" : "text-text"}`}>
+            {contact.displayName}
+          </span>
+          {last ? <span className="ml-auto shrink-0 text-xs text-muted">{formatListTime(last.ts)}</span> : null}
+        </span>
+        <span className="flex items-center gap-2">
+          <span
+            data-testid="personal-message"
+            className={`min-w-0 flex-1 truncate whitespace-nowrap text-sm ${unread > 0 ? "text-text" : "text-muted"}`}
+          >
+            {preview}
+          </span>
+          {unread > 0 ? (
+            <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-accent px-1.5 text-xs font-bold text-on-accent">
+              {unread}
+              <span className="sr-only"> unread</span>
+            </span>
+          ) : null}
         </span>
       </span>
     </button>

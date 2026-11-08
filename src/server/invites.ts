@@ -8,6 +8,7 @@ import { and, eq, or } from "drizzle-orm";
 import type { Db } from "../db/client";
 import { burnedPins, contacts, invites, pins } from "../db/schema";
 import { PIN_REGEX } from "../shared/pin";
+import { INVITE_TOKEN } from "../shared/scan";
 import type { ErrorCode } from "../shared/protocol";
 import { safeLog } from "../shared/safeLog";
 import { guardPrivateKeys } from "./guard";
@@ -37,6 +38,7 @@ export interface InviteNoticeInput {
   kind: "invite" | "accepted";
   from: string;
   inviteId?: string;
+  token?: string;
 }
 
 /** The PinMailbox RPC surface used here. */
@@ -107,8 +109,13 @@ function isFailure(x: unknown): x is InviteFailure {
 export async function sendInvite(deps: InviteDeps, req: unknown): Promise<InviteResult<{ inviteId: string }>> {
   const r = await verified(req, "sendInvite", deps);
   if (isFailure(r)) return r;
-  const payload = r.payload as { to?: unknown } | null;
+  const payload = r.payload as { to?: unknown; token?: unknown } | null;
   const target = payload && typeof payload === "object" ? payload.to : undefined;
+  // Opaque to the server: relayed so the invited client can auto-accept invites made from its own link.
+  const token = payload && typeof payload === "object" ? payload.token : undefined;
+  if (token !== undefined && (typeof token !== "string" || !INVITE_TOKEN.test(token))) {
+    return fail("validation_failed", "token");
+  }
 
   const formatOk = typeof target === "string" && PIN_REGEX.test(target);
   const t = formatOk ? (target as string) : "";
@@ -137,7 +144,13 @@ export async function sendInvite(deps: InviteDeps, req: unknown): Promise<Invite
   if (!inserted) return fail("duplicate", "to");
 
   try {
-    await deps.mailboxFor(t).pushNotice({ type: "inviteNotice", kind: "invite", from: r.pin, inviteId: inserted.id });
+    await deps.mailboxFor(t).pushNotice({
+      type: "inviteNotice",
+      kind: "invite",
+      from: r.pin,
+      inviteId: inserted.id,
+      ...(token ? { token } : {}),
+    });
   } catch {
     // The invite is persisted; the recipient still sees it via the directory on next sync.
     safeLog("invite_notice_failed");

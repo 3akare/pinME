@@ -52,6 +52,8 @@ export interface InviteFlowDeps {
   navigate: (to: { pin: string; ownPin: string }) => void;
   /** Told when a counterparty accepted one of our invites (the new Contact is already stored). */
   onAccepted?: (contact: ContactRecord) => void;
+  /** Told when an invite carrying our link token was accepted without asking. */
+  onAutoAccepted?: (contact: ContactRecord) => void;
   now?: () => number;
 }
 
@@ -112,13 +114,16 @@ export function createInviteFlow(deps: InviteFlowDeps) {
     }
   }
 
-  return {
-    /** Validates the PIN format before any request (Req 4.7). */
-    async sendInvite(ownPin: string, to: string): Promise<FlowResult> {
+  const api = {
+    /**
+     * Validates the PIN format before any request (Req 4.7). `token` comes from the
+     * invitee's QR code or link and lets their client accept without asking.
+     */
+    async sendInvite(ownPin: string, to: string, token?: string): Promise<FlowResult> {
       if (!isValidPin(to)) return { ok: false, code: "validation_failed", field: "pin" };
       const own = await ownPinRecord(ownPin);
       if (!own) return { ok: false, code: "unknown_pin" };
-      const res = await deps.sendInviteFn(sign(own, "sendInvite", { to }));
+      const res = await deps.sendInviteFn(sign(own, "sendInvite", token ? { to, token } : { to }));
       return res.ok ? { ok: true } : res;
     },
 
@@ -149,10 +154,23 @@ export function createInviteFlow(deps: InviteFlowDeps) {
       return { ok: true };
     },
 
-    /** Incoming `invite` notice: persist the pending invite, labelled with the inviter's name when known. */
-    async onInvite(ownPin: string, from: string, inviteId: string): Promise<void> {
-      const record: InviteRecord = { inviteId, ownPin, fromPin: from, createdAt: now() };
+    /**
+     * Incoming `invite` notice. An invite that echoes this PIN's current link token was made by
+     * scanning our own code, so it is accepted at once; anything else waits for the user.
+     */
+    async onInvite(ownPin: string, from: string, inviteId: string, token?: string): Promise<void> {
+      const record: InviteRecord = { inviteId, ownPin, fromPin: from, createdAt: now(), ...(token ? { token } : {}) };
       await deps.repos.inviteRepo.put(record);
+      const own = await ownPinRecord(ownPin);
+      if (token && own?.inviteToken && token === own.inviteToken) {
+        const res = await api.respondInvite(ownPin, inviteId, true);
+        if (res.ok) {
+          const contact = await deps.repos.contactRepo.get(ownPin, from);
+          if (contact) deps.onAutoAccepted?.(contact);
+          return;
+        }
+        // Fall through: the user can still accept by hand.
+      }
       const name = await lookupName(from);
       const named: InviteRecord = name ? { ...record, fromDisplayName: name } : record;
       if (name) await deps.repos.inviteRepo.put(named);
@@ -179,6 +197,7 @@ export function createInviteFlow(deps: InviteFlowDeps) {
       }
     },
   };
+  return api;
 
   /** Looks up the profile and stores the Contact; a PIN that is gone is dropped, other failures retry later. */
   async function completeAccepted(ownPin: string, from: string): Promise<FlowResult> {

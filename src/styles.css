@@ -2,25 +2,35 @@
 @import "./styles/shake.css";
 @import "./styles/ghost.css";
 
-/* Baseline dark theme with blue accent.
-   Contrast ratios against --color-bg (#0b1220):
-   text #e6edf7 ~15:1, muted #9fb0c8 ~8:1, accent #5b9bff ~6.4:1 */
+/* Messenger dark theme: near-black panels, one blue accent.
+   Contrast: text on bg/surface > 13:1, muted on surface ~6.6:1, accent on bg ~7:1,
+   on-accent on accent ~7.9:1, white on accent-strong (sent bubbles) ~5.4:1. */
 @theme {
-  --color-bg: #0b1220;
-  --color-surface: #131c2e;
-  --color-border: #2a3a57;
-  --color-text: #e6edf7;
-  --color-muted: #9fb0c8;
-  --color-accent: #5b9bff;
-  --color-accent-strong: #2f6fe0; /* white text 4.7:1 */
-  --color-accent-hover: #8dbaff; /* on-accent text ~9:1 */
-  --color-on-accent: #07101f;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --color-bg: #0d0e12;
+  --color-surface: #16171d;
+  --color-elevated: #1e2028;
+  --color-border: #272a34;
+  --color-text: #ececf1;
+  --color-muted: #9b9eae;
+  --color-accent: #6fa2ff;
+  --color-accent-strong: #2b5fd9;
+  --color-accent-hover: #93baff;
+  --color-on-accent: #0a1020;
 }
 
 html, body {
   overflow-x: hidden;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
   max-width: 100%;
   background-color: var(--color-bg);
   color: var(--color-text);
   color-scheme: dark;
+}
+
+/* Quiet scrollbars inside panes. */
+.pinme-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
 }

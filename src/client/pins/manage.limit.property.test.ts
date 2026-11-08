@@ -26,7 +26,7 @@ function setup(count: number) {
   });
   const connections = createConnectionManager({
     urlFor: (p) => `ws://x/ws/${p}`,
-    start: (): Session => ({ dispatcher: {} as never, send: () => true, close: () => {} }),
+    start: (): Session => ({ dispatcher: {} as never, send: () => true, onAuthenticated: () => () => {}, reconnect: () => {}, close: () => {} }),
   });
   const deps: ManagePinsDeps = {
     getPins: () => pins,

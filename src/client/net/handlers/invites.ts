@@ -16,7 +16,7 @@ export function createInviteNoticeHandler(
     let work: Promise<unknown> | null = null;
     if (msg.kind === "presence") onPresence(msg);
     else if (msg.kind === "invite") {
-      if (msg.inviteId) work = flow.onInvite(ownPin, msg.from, msg.inviteId);
+      if (msg.inviteId) work = flow.onInvite(ownPin, msg.from, msg.inviteId, msg.token);
     } else if (msg.kind === "accepted") {
       work = flow.onAccepted(ownPin, msg.from);
     }

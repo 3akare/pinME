@@ -11,6 +11,8 @@ describe("connection manager teardown", () => {
   const fakeSession = () => ({
     dispatcher: createDispatcher(),
     send: () => true,
+    onAuthenticated: () => () => {},
+    reconnect: () => {},
     close: vi.fn<() => void>(),
   });
 

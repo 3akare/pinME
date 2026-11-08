@@ -89,6 +89,8 @@ export interface Repositories {
     /** Messages of one conversation ordered by timestamp ascending. */
     listConversation(ownPin: string, contactPin: string): Promise<MessageRecord[]>;
     put(record: MessageRecord): Promise<void>;
+    /** Outgoing messages of one own PIN still waiting for a connection, oldest first. */
+    listPending(ownPin: string): Promise<MessageRecord[]>;
     setMarker(
       ownPin: string,
       contactPin: string,
@@ -155,6 +157,10 @@ function buildRepos(ctx: Ctx): Repositories {
       put: async (record) => {
         await ctx.store("messages").put(record);
       },
+      listPending: async (ownPin) =>
+        (await ctx.store("messages").index("byOwnPin").getAll(ownPin))
+          .filter((m) => m.pending && m.direction === "out")
+          .sort((a, b) => a.ts - b.ts),
       setMarker: async (ownPin, contactPin, messageId, marker) => {
         const store = ctx.store("messages");
         const existing = await store.get([ownPin, contactPin, messageId]);

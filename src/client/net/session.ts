@@ -34,6 +34,10 @@ export interface SessionOptions {
 export interface Session {
   readonly dispatcher: Dispatcher;
   send(data: string): boolean;
+  /** Runs after every successful authentication (first connect and each reconnect). */
+  onAuthenticated(listener: () => void): () => void;
+  /** Skips the backoff wait and reconnects now. */
+  reconnect(): void;
   close(): void;
 }
 
@@ -48,6 +52,7 @@ export function startSession(opts: SessionOptions): Session {
   let closedByUser = false;
   let timer: ReturnType<typeof setTimeout> | null = null;
   let socket: ReconnectingSocket | null = null;
+  const authListeners = new Set<() => void>();
 
   const clearTimer = () => {
     if (timer) clearTimeout(timer);
@@ -59,6 +64,13 @@ export function startSession(opts: SessionOptions): Session {
     clearTimer();
     socket?.resetBackoff();
     setStatus("connected");
+    for (const l of [...authListeners]) {
+      try {
+        l();
+      } catch {
+        // a listener failing must not affect the session
+      }
+    }
   };
 
   setStatus("connecting");
@@ -104,11 +116,17 @@ export function startSession(opts: SessionOptions): Session {
   return {
     dispatcher,
     send: (data) => authenticated && !!socket?.send(data),
+    onAuthenticated(listener) {
+      authListeners.add(listener);
+      return () => authListeners.delete(listener);
+    },
+    reconnect: () => socket?.reconnectNow(),
     close() {
       if (closedByUser) return;
       clearTimer();
       socket?.close();
       closedByUser = true;
+      authListeners.clear();
       useConnectionStore.getState().clear(opts.pin);
     },
   };

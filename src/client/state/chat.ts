@@ -11,6 +11,8 @@ interface ChatState {
   setConversation(ownPin: string, contactPin: string, messages: MessageRecord[]): void;
   /** Adds a message; a message with an existing Message_ID is ignored. */
   addMessage(message: MessageRecord): void;
+  /** Replaces a message with the same Message_ID (e.g. queued -> sent); unknown IDs are ignored. */
+  updateMessage(message: MessageRecord): void;
   /** Applies the monotonic marker reducer; unknown Message_IDs are ignored. */
   applyMarker(ownPin: string, contactPin: string, messageId: string, marker: Marker): void;
   clearConversation(ownPin: string, contactPin: string): void;
@@ -19,8 +21,14 @@ interface ChatState {
 
 export const useChatStore = create<ChatState>((set) => ({
   messages: {},
+  // Merges with what is already in memory: messages that arrived before the history loaded stay.
   setConversation: (ownPin, contactPin, messages) =>
-    set((s) => ({ messages: { ...s.messages, [conversationKey(ownPin, contactPin)]: messages } })),
+    set((s) => {
+      const key = conversationKey(ownPin, contactPin);
+      const byId = new Map((s.messages[key] ?? []).map((m) => [m.messageId, m]));
+      for (const m of messages) byId.set(m.messageId, { ...m, ...(byId.get(m.messageId) ?? {}) });
+      return { messages: { ...s.messages, [key]: [...byId.values()].sort((a, b) => a.ts - b.ts) } };
+    }),
   addMessage: (m) =>
     set((s) => {
       const key = conversationKey(m.ownPin, m.contactPin);
@@ -28,6 +36,17 @@ export const useChatStore = create<ChatState>((set) => ({
       if (list.some((x) => x.messageId === m.messageId)) return s;
       const next = [...list, m].sort((a, b) => a.ts - b.ts);
       return { messages: { ...s.messages, [key]: next } };
+    }),
+  updateMessage: (m) =>
+    set((s) => {
+      const key = conversationKey(m.ownPin, m.contactPin);
+      const list = s.messages[key];
+      const idx = list?.findIndex((x) => x.messageId === m.messageId) ?? -1;
+      if (!list || idx < 0) return s;
+      const copy = list.slice();
+      // Keep a marker that advanced meanwhile (a receipt can beat the local write).
+      copy[idx] = { ...m, marker: advance(m.marker ?? "clock", list[idx]!.marker ?? "clock") };
+      return { messages: { ...s.messages, [key]: copy } };
     }),
   applyMarker: (ownPin, contactPin, messageId, marker) =>
     set((s) => {

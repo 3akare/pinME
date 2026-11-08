@@ -1,6 +1,9 @@
 import { createInviteFlow, type InviteFlow, type InviteFlowDeps } from "../invites/flow";
-import { ready, randomBytes, signRequest, decrypt } from "../crypto";
+import { connectTo, type ConnectOutcome } from "../invites/connect";
+import { ensureInviteTokens, resetInviteToken } from "../invites/token";
+import { ready, randomBytes, signRequest, decrypt, encrypt } from "../crypto";
 import { createReceiptSender, type ReceiptSender } from "../chat/receipts";
+import { flushPending } from "../chat/send";
 import { registerTypingHandlers, useTypingStore } from "../chat/typing";
 import { registerInviteHandlers } from "../net/handlers/invites";
 import { createPresenceHandler } from "../net/handlers/presence";
@@ -11,11 +14,13 @@ import { registerReceiptHandlers } from "../net/handlers/receipts";
 import { createConnectionManager, type ConnectionManager } from "../net/manager";
 import type { Session } from "../net/session";
 import { conversationKey, useChatStore } from "../state/chat";
+import { isConnected } from "../state/connection";
 import { useContactsStore, hydrateContacts } from "../state/contacts";
 import { useIdentityStore } from "../state/identity";
 import { usePinsStore } from "../state/pins";
 import { useToastStore } from "../state/toasts";
-import { openLocalStore, type ContactRecord, type LocalStore } from "../storage";
+import { openLocalStore, type ContactRecord, type LocalStore, type MessageRecord } from "../storage";
+import type { InviteTarget } from "../../shared/scan";
 import { getPublicProfileFn } from "../../server/functions/pins";
 import { respondInviteFn, sendInviteFn } from "../../server/functions/invites";
 
@@ -37,6 +42,8 @@ function createFlow(store: LocalStore, extra: Partial<InviteFlowDeps> = {}): Inv
     getPublicProfileFn: (pin) =>
       getPublicProfileFn({ data: { pin } }) as ReturnType<InviteFlowDeps["getPublicProfileFn"]>,
     navigate: () => {},
+    onAccepted: (c) => announceContact(c, "accepted your invite."),
+    onAutoAccepted: (c) => announceContact(c, "connected using your QR code."),
     ...extra,
   });
 }
@@ -47,6 +54,16 @@ export async function buildInviteFlow(
 ): Promise<InviteFlow> {
   const [store] = await Promise.all([getLocalStore(), ready()]);
   return createFlow(store, { navigate });
+}
+
+/** Connects the active PIN to a scanned or linked PIN; see `connectTo`. */
+export async function connectToTarget(ownPin: string, target: InviteTarget): Promise<ConnectOutcome> {
+  const [store] = await Promise.all([getLocalStore(), ready()]);
+  return connectTo(
+    { flow: createFlow(store), repos: store, ownPins: usePinsStore.getState().pins.map((p) => p.pin) },
+    ownPin,
+    target,
+  );
 }
 
 function wsUrl(pin: string): string {
@@ -60,22 +77,67 @@ function isChatVisible(ownPin: string, contactPin: string): boolean {
   return foreground && useTypingStore.getState().openKey === conversationKey(ownPin, contactPin);
 }
 
-const receiptSenders = new Map<string, ReceiptSender>();
-
-function announceAccepted(c: ContactRecord): void {
+function announceContact(c: ContactRecord, what: string): void {
+  if (isChatVisible(c.ownPin, c.contactPin)) return;
   useToastStore.getState().push({
-    text: `${c.displayName} accepted your invite.`,
+    text: `${c.displayName} ${what}`,
     chat: { ownPin: c.ownPin, contactPin: c.contactPin },
+    key: `contact:${c.ownPin}:${c.contactPin}`,
   });
 }
+
+/** A message arrived for a chat that is not on screen: one toast per conversation. */
+function announceMessage(m: MessageRecord): void {
+  if (m.direction !== "in" || isChatVisible(m.ownPin, m.contactPin)) return;
+  const contact = useContactsStore
+    .getState()
+    .contacts.find((c) => c.ownPin === m.ownPin && c.contactPin === m.contactPin);
+  const preview = m.text.length > 80 ? `${m.text.slice(0, 80)}…` : m.text;
+  useToastStore.getState().push({
+    text: `${contact?.displayName ?? m.contactPin}: ${preview}`,
+    chat: { ownPin: m.ownPin, contactPin: m.contactPin },
+    key: `msg:${m.ownPin}:${m.contactPin}`,
+  });
+}
+
+/** Relay errors after which a queued message is retried; anything else marks it failed. */
+const RETRYABLE = new Set(["rate_limited", "verification_unavailable"]);
+
+const receiptSenders = new Map<string, ReceiptSender>();
 
 /** Registers every frame handler for one own PIN's session; returns their teardown. */
 function wireSession(pin: string, session: Session, store: LocalStore): () => void {
   const contacts = useContactsStore.getState();
   const chat = useChatStore.getState();
-  const flow = createFlow(store, { onAccepted: announceAccepted });
+  const flow = createFlow(store);
   const receipts = createReceiptSender({ send: (d) => session.send(d), isChatVisible });
   receiptSenders.set(pin, receipts);
+  let retryTimer: ReturnType<typeof setTimeout> | undefined;
+
+  const flush = () =>
+    void flushPending(
+      { repos: store, store: chat, encrypt, send: (d) => session.send(d), isConnected: () => isConnected(pin) },
+      pin,
+    ).catch(() => {});
+
+  /** The relay refused a message (`ref` is its Message_ID): queue it again or mark it failed. */
+  const onRefused = async (messageId: string, code: string, retryAfterSec?: number) => {
+    const msg = Object.values(useChatStore.getState().messages)
+      .flat()
+      .find((m) => m.ownPin === pin && m.messageId === messageId && m.direction === "out");
+    const saved = msg ?? (await store.db.getAllFromIndex("messages", "byOwnPin", pin)).find((m) => m.messageId === messageId);
+    if (!saved || saved.direction !== "out") return;
+    const next: MessageRecord = RETRYABLE.has(code)
+      ? { ...saved, pending: true, failed: false }
+      : { ...saved, pending: false, failed: true };
+    await store.messageRepo.put(next);
+    chat.updateMessage(next);
+    if (RETRYABLE.has(code)) {
+      clearTimeout(retryTimer);
+      retryTimer = setTimeout(flush, Math.max(1, retryAfterSec ?? 2) * 1000);
+    }
+  };
+
   const offs = [
     registerInviteHandlers(session.dispatcher, pin, flow, createPresenceHandler(pin, { repos: store, store: contacts })),
     registerTypingHandlers(session.dispatcher, { ownPin: pin }),
@@ -86,11 +148,19 @@ function wireSession(pin: string, session: Session, store: LocalStore): () => vo
       repos: store,
       store: chat,
       decrypt,
-      onSaved: receipts.onSaved,
+      onSaved: (m) => {
+        receipts.onSaved(m);
+        announceMessage(m);
+      },
     }),
     registerReceiptHandlers(session.dispatcher, { ownPin: pin, repos: store, store: chat }),
+    session.dispatcher.listen("error", (e) => {
+      if (e.ref) void onRefused(e.ref, e.code, e.retryAfterSec).catch(() => {});
+    }),
+    session.onAuthenticated(flush),
   ];
   return () => {
+    clearTimeout(retryTimer);
     if (receiptSenders.get(pin) === receipts) receiptSenders.delete(pin);
     for (const off of offs) off();
   };
@@ -120,9 +190,28 @@ export function getSession(pin: string): Session | undefined {
   return manager?.get(pin);
 }
 
-/** Call when a chat is shown or regains focus: sends `read` for messages that arrived while hidden. */
+/** Call when a chat is shown or regains focus: sends `read` and clears its unread count. */
 export function notifyChatVisible(ownPin: string, contactPin: string): void {
   receiptSenders.get(ownPin)?.onChatVisible(ownPin, contactPin);
+  useToastStore.getState().dismissChat(ownPin, contactPin);
+  void markConversationRead(ownPin, contactPin).catch(() => {});
+}
+
+async function markConversationRead(ownPin: string, contactPin: string): Promise<void> {
+  const contact = useContactsStore.getState().contacts.find((c) => c.ownPin === ownPin && c.contactPin === contactPin);
+  if (!contact) return;
+  const list = useChatStore.getState().messages[conversationKey(ownPin, contactPin)] ?? [];
+  const latestIn = list.reduce((t, m) => (m.direction === "in" && m.ts > t ? m.ts : t), 0);
+  if (latestIn <= (contact.lastReadAt ?? 0)) return;
+  const updated: ContactRecord = { ...contact, lastReadAt: latestIn };
+  await (await getLocalStore()).contactRepo.put(updated);
+  useContactsStore.getState().upsertContact(updated);
+}
+
+/** New QR code and link for a PIN; codes shared before stop connecting automatically. */
+export async function resetPinLink(pin: string): Promise<void> {
+  const store = await getLocalStore();
+  await resetInviteToken({ repos: store, randomBytes, onSaved: (p) => usePinsStore.getState().addPin(p) }, pin);
 }
 
 let booted: Promise<boolean> | null = null;
@@ -143,9 +232,11 @@ export function bootstrapApp(force = false): Promise<boolean> {
         return false;
       }
       usePinsStore.getState().setPins(pins);
+      await ready();
+      await ensureInviteTokens({ repos: store, randomBytes, onSaved: (p) => usePinsStore.getState().addPin(p) }, pins);
       await hydrateContacts(store, pins.map((p) => p.pin));
       await startConnections();
-      void createFlow(store, { onAccepted: announceAccepted }).resumePendingAccepts().catch(() => {});
+      void createFlow(store).resumePendingAccepts().catch(() => {});
       return true;
     } catch {
       booted = null;

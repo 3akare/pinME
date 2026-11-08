@@ -3,14 +3,17 @@ import QRCode from "qrcode";
 
 export interface BarcodeProps {
   pin: string;
+  /** What the code encodes; defaults to the PIN. Pass the invite link so any camera app can open it. */
+  value?: string;
   /** Rendered size in CSS px; never below 200. */
   size?: number;
 }
 
 const MIN_SIZE = 200;
 
-/** Renders a PIN as a QR code on a rounded card, shown next to the PIN text. */
-export function Barcode({ pin, size = MIN_SIZE }: BarcodeProps) {
+/** Renders a QR code on a rounded card with the PIN printed underneath. */
+export function Barcode({ pin, value, size = MIN_SIZE }: BarcodeProps) {
+  const content = value ?? pin;
   const px = Math.max(MIN_SIZE, size);
   const [dataUrl, setDataUrl] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
@@ -18,7 +21,7 @@ export function Barcode({ pin, size = MIN_SIZE }: BarcodeProps) {
   useEffect(() => {
     let cancelled = false;
     setFailed(false);
-    QRCode.toDataURL(pin, {
+    QRCode.toDataURL(content, {
       width: px * 2, // 2x for crisp rendering on high-density screens
       margin: 1,
       errorCorrectionLevel: "M",
@@ -33,7 +36,7 @@ export function Barcode({ pin, size = MIN_SIZE }: BarcodeProps) {
     return () => {
       cancelled = true;
     };
-  }, [pin, px]);
+  }, [content, px]);
 
   return (
     <figure className="flex flex-col items-center gap-3 rounded-2xl border border-blue-500/40 bg-slate-900 p-4">

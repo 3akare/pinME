@@ -26,7 +26,7 @@ const rec = (pin: string, label = "L"): PinRecord => ({
 function setup(initial: PinRecord[], registerOk = true) {
   const pins = [...initial];
   const close = vi.fn();
-  const start = vi.fn((): Session => ({ dispatcher: {} as never, send: () => true, close }));
+  const start = vi.fn((): Session => ({ dispatcher: {} as never, send: () => true, onAuthenticated: () => () => {}, reconnect: () => {}, close }));
   const connections = createConnectionManager({ urlFor: (p) => `ws://x/ws/${p}`, start });
   const registerPin = vi.fn(async () => (registerOk ? { ok: true as const } : { ok: false as const, code: "x" }));
   const savePin = vi.fn(async (r: PinRecord) => {

@@ -24,6 +24,11 @@ export interface PinRecord {
   presence?: "available" | "busy";
   personalMessage: string;
   createdAt: number;
+  /**
+   * Secret carried in this PIN's QR code and invite link. Invites that echo it are accepted
+   * automatically; replacing it revokes every code shared so far.
+   */
+  inviteToken?: string;
 }
 
 export interface ContactRecord {
@@ -38,6 +43,8 @@ export interface ContactRecord {
   /** Contact's availability as last reported by the Directory; absent means not known yet. */
   presence?: "available" | "busy";
   unavailable: boolean;
+  /** Received messages up to this time have been seen; later ones count as unread. */
+  lastReadAt?: number;
 }
 
 export interface InviteRecord {
@@ -46,6 +53,8 @@ export interface InviteRecord {
   fromPin: string;
   /** Inviter's public display name, when the Directory lookup succeeded. */
   fromDisplayName?: string;
+  /** Token the inviter echoed from one of our links. */
+  token?: string;
   createdAt: number;
 }
 
@@ -68,6 +77,10 @@ export interface MessageRecord {
   ts: number;
   marker?: Marker;
   kind: "chat" | "broadcast";
+  /** Outgoing message written while offline; sent when the session authenticates. */
+  pending?: boolean;
+  /** Outgoing message the server refused for good (e.g. the contact is gone). */
+  failed?: boolean;
 }
 
 export interface PinmeDB extends DBSchema {

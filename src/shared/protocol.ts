@@ -8,6 +8,7 @@ import {
   PERSONAL_MESSAGE_MAX,
 } from "./limits";
 import { PIN_REGEX } from "./pin";
+import { INVITE_TOKEN } from "./scan";
 
 /** The protocol has exactly these eleven types. Do not add a twelfth. */
 export const MESSAGE_TYPES = [
@@ -73,6 +74,8 @@ const inviteNoticeFrame = z.strictObject({
   kind: z.enum(["invite", "accepted", "presence"]),
   from: PinSchema,
   inviteId: z.uuid().optional(),
+  /** Auto-accept token from the invitee's link; only the invited client can judge it. */
+  token: z.string().regex(INVITE_TOKEN).optional(),
   status: z.enum(["available", "busy"]).optional(),
   personalMessage: z.string().max(PERSONAL_MESSAGE_MAX).optional(),
 });
