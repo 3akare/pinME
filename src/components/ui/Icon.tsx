@@ -3,6 +3,7 @@ const PATHS = {
   qr: "M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z",
   send: "M4 12l16-8-6 16-2-7-8-1z",
   back: "M15 5l-7 7 7 7",
+  down: "M6 9l6 6 6-6",
   bolt: "M13 3L5 14h6l-1 7 8-11h-6l1-7z",
   more: "M12 6h.01M12 12h.01M12 18h.01",
   close: "M6 6l12 12M18 6L6 18",

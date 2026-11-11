@@ -37,6 +37,18 @@ describe("receipt sender", () => {
     expect(sent.map((f) => f.type)).toEqual(["delivered", "read"]);
   });
 
+  it("sends read only for messages the reader has seen", () => {
+    const sent: any[] = [];
+    const s = createReceiptSender({ send: (d) => (sent.push(JSON.parse(d)), true), isChatVisible: () => true });
+    s.onSaved({ ...inMsg(ID1), ts: 10 });
+    s.onSaved({ ...inMsg(ID2), ts: 20 });
+    expect(sent.map((f) => f.type)).toEqual(["delivered", "delivered"]);
+    s.onChatVisible(A, B, 10);
+    expect(sent.filter((f) => f.type === "read").map((f) => f.messageId)).toEqual([ID1]);
+    s.onChatVisible(A, B, 20);
+    expect(sent.filter((f) => f.type === "read").map((f) => f.messageId)).toEqual([ID1, ID2]);
+  });
+
   it("retries while disconnected until the 5 s deadline", () => {
     let t = 0;
     let ok = false;

@@ -37,15 +37,19 @@ export interface MessageBubbleProps {
   failed?: boolean;
   /** Group messages have no single recipient to report D or R, so they show none. */
   showMarker?: boolean;
+  /** Tags the row for the conversation's scroll and read tracking. */
+  messageId?: string;
 }
 
 /** Sent bubbles sit right on the lifted paper with time and Delivery_Marker; received sit left. */
-export function MessageBubble({ direction, text, marker, ts, timeText, pending, failed, showMarker = true }: MessageBubbleProps) {
+export function MessageBubble({ direction, text, marker, ts, timeText, pending, failed, showMarker = true, messageId }: MessageBubbleProps) {
   const sent = direction === "out";
   return (
     <div
       data-testid="message-bubble"
       data-direction={direction}
+      data-message-id={messageId}
+      data-ts={messageId ? ts : undefined}
       className={`flex w-full ${sent ? "justify-end" : "justify-start"}`}
     >
       <div
