@@ -4,6 +4,7 @@ import { ChatView } from "../chat/ChatView";
 import { ChatList } from "../contacts/ChatList";
 import { Ghost } from "../ui/Ghost";
 import { GroupView } from "../chat/GroupView";
+import { useAppViewport } from "./useAppViewport";
 import { BackupSheet, MyCodeSheet, NewGroupSheet, ScanSheet } from "./Sheets";
 
 export type SheetName = "code" | "scan" | "backup" | "group";
@@ -21,9 +22,10 @@ export function AppShell({ chatPin, groupId, initialSheet }: AppShellProps) {
   const [sheet, setSheet] = useState<SheetName | null>(initialSheet ?? null);
   const shaking = useShakeStore((s) => s.shaking);
   const chatOpen = !!chatPin || !!groupId;
+  useAppViewport();
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-paper">
+    <div className="app-frame flex overflow-hidden bg-paper">
       <aside
         aria-label="Chats"
         className={`${chatOpen ? "hidden md:flex" : "flex"} w-full shrink-0 flex-col border-rule md:w-[380px] md:border-r`}

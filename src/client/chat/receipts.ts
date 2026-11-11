@@ -15,10 +15,13 @@ export interface ReceiptSenderDeps {
 }
 
 export interface ReceiptSender {
-  /** Pass to ReceiveDeps.onSaved. Sends `delivered`, and `read` if the chat is visible. */
+  /** Pass to ReceiveDeps.onSaved. Sends `delivered`; `read` waits until the message is actually seen. */
   onSaved(message: MessageRecord): void;
-  /** Call when a chat becomes visible/displayed: sends `read` for pending received messages. */
-  onChatVisible(ownPin: string, contactPin: string): void;
+  /**
+   * Call when the reader has seen a chat up to `upTo` (the timestamp of the newest received message on
+   * screen): sends `read` for pending received messages no newer than that. Omit `upTo` for all of them.
+   */
+  onChatVisible(ownPin: string, contactPin: string, upTo?: number): void;
 }
 
 export function createReceiptSender(deps: ReceiptSenderDeps): ReceiptSender {
@@ -51,13 +54,13 @@ export function createReceiptSender(deps: ReceiptSenderDeps): ReceiptSender {
       // Group messages and notes carry no D/R: there is no single sender to report back to.
       if (m.direction !== "in" || m.kind === "group" || m.kind === "system") return;
       sendWithRetry({ type: "delivered", to: m.contactPin, messageId: m.messageId }, now());
-      if (deps.isChatVisible(m.ownPin, m.contactPin)) sendRead(m);
-      else pendingRead.set(keyOf(m), m);
+      // An open chat is not proof of reading: the reader may be scrolled up. The view reports what it showed.
+      if (!readSent.has(keyOf(m))) pendingRead.set(keyOf(m), m);
     },
-    onChatVisible(ownPin, contactPin) {
+    onChatVisible(ownPin, contactPin, upTo = Number.POSITIVE_INFINITY) {
       if (!deps.isChatVisible(ownPin, contactPin)) return;
       for (const m of [...pendingRead.values()]) {
-        if (m.ownPin === ownPin && m.contactPin === contactPin) sendRead(m);
+        if (m.ownPin === ownPin && m.contactPin === contactPin && m.ts <= upTo) sendRead(m);
       }
     },
   };

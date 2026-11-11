@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { bootstrapApp, getLocalStore, getSession, notifyChatVisible, secureEncrypt, warmSession } from "../../client/app/bootstrap";
 import { sendMessage } from "../../client/chat/send";
 import { createTypingThrottle, useTypingStore } from "../../client/chat/typing";
@@ -10,10 +10,12 @@ import { usePinsStore } from "../../client/state/pins";
 import type { ContactRecord, MessageRecord } from "../../client/storage";
 import { Avatar } from "../ui/Avatar";
 import { Icon } from "../ui/Icon";
+import { ArrivalAnnouncer, JumpToLatest, UnreadDivider } from "./ConversationParts";
 import { MessageBubble } from "./MessageBubble";
 import { MessageInput } from "./MessageInput";
 import { PingButton } from "./PingButton";
 import { TypingIndicator } from "./TypingIndicator";
+import { useConversationScroll } from "./useConversationScroll";
 
 const NO_MESSAGES: MessageRecord[] = [];
 const typingThrottle = createTypingThrottle();
@@ -44,7 +46,6 @@ export function ChatView({ pin }: { pin: string }) {
   const key = activePin ? conversationKey(activePin, pin) : "";
   const messages = useChatStore((s) => s.messages[key] ?? NO_MESSAGES);
   const typingVisible = useTypingStore((s) => !!s.visible[key]);
-  const scroller = useRef<HTMLDivElement>(null);
 
   // The contact may belong to another own PIN (opened from a link or a toast): switch to it.
   useEffect(() => {
@@ -80,35 +81,31 @@ export function ChatView({ pin }: { pin: string }) {
     if (ready && activePin && peerIk && !contact?.unavailable) void warmSession(activePin, pin, peerIk);
   }, [ready, activePin, pin, peerIk, contact?.unavailable]);
 
-  // Read receipts and the unread count follow what is actually on screen.
+  // Opening the chat clears its toasts; `read` and the unread count follow what is actually on screen.
   useEffect(() => {
-    if (!ready || !activePin) return;
-    const own = activePin;
-    const markRead = () => {
-      if (document.visibilityState === "visible") notifyChatVisible(own, pin);
-    };
-    markRead();
-    document.addEventListener("visibilitychange", markRead);
-    return () => document.removeEventListener("visibilitychange", markRead);
-  }, [ready, activePin, pin, messages.length]);
+    if (ready && activePin) notifyChatVisible(activePin, pin, 0);
+  }, [ready, activePin, pin]);
 
-  // Stay pinned to the newest message unless the reader scrolled up to look back.
-  const pinned = useRef(true);
-  useLayoutEffect(() => {
-    const el = scroller.current;
-    if (el && pinned.current) el.scrollTop = el.scrollHeight;
-  }, [messages, typingVisible, ready]);
+  const view = useConversationScroll({
+    items: messages,
+    ready: ready && !!contact,
+    lastReadAt: contact?.lastReadAt,
+    onSeen: (upTo) => {
+      if (activePin) notifyChatVisible(activePin, pin, upTo);
+    },
+    describe: (m) => `${contact?.displayName ?? pin}: ${m.text.length > 140 ? `${m.text.slice(0, 140)}…` : m.text}`,
+  });
 
   const groups = useMemo(() => {
     const out: { day: string; items: MessageRecord[] }[] = [];
-    for (const m of messages) {
+    for (const m of view.visible) {
       const day = dayLabel(m.ts);
       const last = out[out.length - 1];
       if (last && last.day === day) last.items.push(m);
       else out.push({ day, items: [m] });
     }
     return out;
-  }, [messages]);
+  }, [view.visible]);
 
   function onTypingInput(text: string): void {
     if (!activePin) return;
@@ -149,7 +146,6 @@ export function ChatView({ pin }: { pin: string }) {
       },
       { ownPin: own, contactPin: pin, text },
     );
-    if (res.ok) pinned.current = true;
     return res.ok;
   }
 
@@ -170,37 +166,43 @@ export function ChatView({ pin }: { pin: string }) {
         </div>
       </header>
 
-      <div
-        ref={scroller}
-        onScroll={(e) => {
-          const el = e.currentTarget;
-          pinned.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
-        }}
-        className="pane-scroll min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-6"
-      >
-        <div role="log" aria-label="Conversation" className="mx-auto flex max-w-3xl flex-col gap-1.5">
-          {groups.length === 0 ? (
-            <p className="py-16 text-center text-muted">
-              Say hello to {contact.displayName}. Messages are encrypted on this device before they leave it.
-            </p>
-          ) : null}
-          {groups.map((g) => (
-            <div key={g.day} className="flex flex-col gap-1.5">
-              <p className="my-3 self-center rounded-pill bg-paper-2 px-3 py-1 text-xs text-muted">{g.day}</p>
-              {g.items.map((m) => (
-                <MessageBubble
-                  key={m.messageId}
-                  direction={m.direction}
-                  text={m.text}
-                  ts={m.ts}
-                  pending={m.pending}
-                  failed={m.failed}
-                  marker={m.direction === "out" ? (m.marker ?? "clock") : undefined}
-                />
-              ))}
-            </div>
-          ))}
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        <div
+          ref={view.scrollerRef}
+          onScroll={view.onScroll}
+          tabIndex={0}
+          aria-label="Messages"
+          className="pane-scroll chat-scroll min-h-0 flex-1 overflow-y-auto px-3 py-4 focus-visible:outline-offset-[-2px] sm:px-6"
+        >
+          <div ref={view.contentRef} role="log" aria-live="off" aria-label="Conversation" className="mx-auto flex max-w-3xl flex-col gap-1.5">
+            {groups.length === 0 ? (
+              <p className="py-16 text-center text-muted">
+                Say hello to {contact.displayName}. Messages are encrypted on this device before they leave it.
+              </p>
+            ) : null}
+            {groups.map((g) => (
+              <div key={g.day} className="flex flex-col gap-1.5">
+                <p className="my-3 self-center rounded-pill bg-paper-2 px-3 py-1 text-xs text-muted">{g.day}</p>
+                {g.items.map((m) => (
+                  <div key={m.messageId} className="contents">
+                    {view.unread?.id === m.messageId ? <UnreadDivider count={view.unread.count} /> : null}
+                    <MessageBubble
+                      messageId={m.messageId}
+                      direction={m.direction}
+                      text={m.text}
+                      ts={m.ts}
+                      pending={m.pending}
+                      failed={m.failed}
+                      marker={m.direction === "out" ? (m.marker ?? "clock") : undefined}
+                    />
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
+        {!view.atBottom ? <JumpToLatest unseen={view.unseen} onJump={view.jumpToLatest} /> : null}
+        <ArrivalAnnouncer text={view.announcement} />
       </div>
 
       {contact.unavailable ? (
@@ -209,6 +211,7 @@ export function ChatView({ pin }: { pin: string }) {
         </p>
       ) : (
         <MessageInput
+          draftKey={key}
           onSend={onSend}
           onChange={onTypingInput}
           connected={status === "connected"}

@@ -30,6 +30,32 @@
   --color-qr-light: #efe7d8;
 }
 
+/* The messenger is an app frame: the document never scrolls, only the panes inside it.
+   Height and top follow the visual viewport on iOS (see useAppViewport); elsewhere 100dvh, which
+   shrinks with the keyboard thanks to interactive-widget=resizes-content. */
+html.app-locked, html.app-locked body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+.app-frame {
+  position: fixed;
+  inset-inline: 0;
+  top: var(--vv-top, 0px);
+  height: var(--vv-height, 100dvh);
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
+}
+/* The conversation scrolls on its own: no scroll chaining, no pull-to-refresh, and our own anchoring
+   (useConversationScroll) instead of the browser's, so the two never fight. */
+.chat-scroll { overscroll-behavior: contain; overflow-anchor: none; }
+/* Clear of the home indicator, except while the keyboard covers it. */
+.composer-pad { padding-bottom: max(env(safe-area-inset-bottom), 0.75rem); }
+html[data-keyboard] .composer-pad { padding-bottom: 0.5rem; }
+/* The composer grows with its text natively where supported (JS fallback in MessageInput). */
+@supports (field-sizing: content) { .composer-field { field-sizing: content; } }
+.toast-stack { top: calc(var(--vv-top, 0px) + env(safe-area-inset-top)); }
+@media (min-width: 40rem) { .toast-stack { top: auto; bottom: 0; } }
+@media (prefers-reduced-motion: no-preference) {
+  .jump-latest { animation: jump-in var(--dur-micro, 160ms) var(--ease-out, ease-out); }
+}
+@keyframes jump-in { from { opacity: 0; transform: translateY(6px); } }
+
 /* Set before hydration on devices that already have an identity (see __root.tsx). */
 html[data-returning] [data-landing] { visibility: hidden; }
 
@@ -114,5 +140,5 @@ html[data-returning] [data-landing] { visibility: hidden; }
   }
 
   /* Quiet scrollbars inside panes. */
-  .pane-scroll { scrollbar-width: thin; scrollbar-color: var(--color-rule) transparent; }
+  .pane-scroll { overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--color-rule) transparent; }
 }

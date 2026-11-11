@@ -89,4 +89,57 @@ describe("MessageInput", () => {
     fireEvent.keyDown(box(), { key: "Enter" });
     await waitFor(() => expect(onSend).toHaveBeenCalledWith("line"));
   });
+
+  it("clears the field at once and restores it if sending fails", async () => {
+    let resolve!: (ok: boolean) => void;
+    const onSend = vi.fn(() => new Promise<boolean>((r) => (resolve = r)));
+    render(<MessageInput onSend={onSend} connected />);
+    fireEvent.change(box(), { target: { value: "hello" } });
+    fireEvent.click(sendBtn());
+    await waitFor(() => expect(box().value).toBe(""));
+    resolve(false);
+    await waitFor(() => expect(box().value).toBe("hello"));
+    expect(screen.getByRole("status").textContent).toContain("could not be sent");
+  });
+
+  it("on a touch screen, Enter adds a line and only the button sends", async () => {
+    const original = window.matchMedia;
+    window.matchMedia = ((q: string) => ({
+      matches: q === "(pointer: coarse)",
+      media: q,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    })) as unknown as typeof window.matchMedia;
+    try {
+      const onSend = vi.fn().mockResolvedValue(true);
+      render(<MessageInput onSend={onSend} connected />);
+      expect(box().getAttribute("enterkeyhint")).toBe("enter");
+      fireEvent.change(box(), { target: { value: "line" } });
+      fireEvent.keyDown(box(), { key: "Enter" });
+      expect(onSend).not.toHaveBeenCalled();
+      fireEvent.click(sendBtn());
+      await waitFor(() => expect(onSend).toHaveBeenCalledWith("line"));
+    } finally {
+      window.matchMedia = original;
+    }
+  });
+
+  it("keeps a draft per conversation and drops it once sent", async () => {
+    sessionStorage.clear();
+    const onSend = vi.fn().mockResolvedValue(true);
+    const first = render(<MessageInput onSend={onSend} connected draftKey="A:B" />);
+    fireEvent.change(box(), { target: { value: "half a thought" } });
+    first.unmount();
+    expect(sessionStorage.getItem("pinme:draft:A:B")).toBe("half a thought");
+    render(<MessageInput onSend={onSend} connected draftKey="A:B" />);
+    expect(box().value).toBe("half a thought");
+    fireEvent.click(sendBtn());
+    await waitFor(() => expect(onSend).toHaveBeenCalledWith("half a thought"));
+    expect(sessionStorage.getItem("pinme:draft:A:B")).toBeNull();
+  });
+
+  it("does not hold space for an empty hint", () => {
+    render(<MessageInput onSend={() => true} connected />);
+    expect(screen.getByRole("status").className).toContain("visually-hidden");
+  });
 });

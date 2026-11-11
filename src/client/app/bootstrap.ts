@@ -330,30 +330,38 @@ export function getSession(pin: string): Session | undefined {
   return manager?.get(pin);
 }
 
-/** Call when a chat is shown or regains focus: sends `read` and clears its unread count. */
-export function notifyChatVisible(ownPin: string, contactPin: string): void {
-  receiptSenders.get(ownPin)?.onChatVisible(ownPin, contactPin);
+/**
+ * The reader has this chat on screen and has seen it up to `upTo`, the timestamp of the newest received
+ * message that was actually visible (0 when only the chat was opened). Clears its toasts, sends `read`
+ * for what was seen and moves the unread mark, never past what was on screen.
+ */
+export function notifyChatVisible(ownPin: string, contactPin: string, upTo: number): void {
   useToastStore.getState().dismissChat(ownPin, contactPin);
-  void markConversationRead(ownPin, contactPin).catch(() => {});
+  if (upTo <= 0) return;
+  receiptSenders.get(ownPin)?.onChatVisible(ownPin, contactPin, upTo);
+  void markConversationRead(ownPin, contactPin, upTo).catch(() => {});
 }
 
-async function markConversationRead(ownPin: string, contactPin: string): Promise<void> {
-  if (isGroupKey(contactPin)) return markGroupRead(ownPin, contactPin);
+function latestReadable(ownPin: string, key: string, upTo: number): number {
+  const list = useChatStore.getState().messages[conversationKey(ownPin, key)] ?? [];
+  return list.reduce((t, m) => (m.direction === "in" && m.ts <= upTo && m.ts > t ? m.ts : t), 0);
+}
+
+async function markConversationRead(ownPin: string, contactPin: string, upTo: number): Promise<void> {
+  if (isGroupKey(contactPin)) return markGroupRead(ownPin, contactPin, upTo);
   const contact = useContactsStore.getState().contacts.find((c) => c.ownPin === ownPin && c.contactPin === contactPin);
   if (!contact) return;
-  const list = useChatStore.getState().messages[conversationKey(ownPin, contactPin)] ?? [];
-  const latestIn = list.reduce((t, m) => (m.direction === "in" && m.ts > t ? m.ts : t), 0);
+  const latestIn = latestReadable(ownPin, contactPin, upTo);
   if (latestIn <= (contact.lastReadAt ?? 0)) return;
   const updated: ContactRecord = { ...contact, lastReadAt: latestIn };
   await (await getLocalStore()).contactRepo.put(updated);
   useContactsStore.getState().upsertContact(updated);
 }
 
-async function markGroupRead(ownPin: string, key: string): Promise<void> {
+async function markGroupRead(ownPin: string, key: string, upTo: number): Promise<void> {
   const group = useGroupsStore.getState().groups.find((g) => g.ownPin === ownPin && groupKey(g.groupId) === key);
   if (!group) return;
-  const list = useChatStore.getState().messages[conversationKey(ownPin, key)] ?? [];
-  const latestIn = list.reduce((t, m) => (m.direction === "in" && m.ts > t ? m.ts : t), 0);
+  const latestIn = latestReadable(ownPin, key, upTo);
   if (latestIn <= (group.lastReadAt ?? 0)) return;
   const updated = { ...group, lastReadAt: latestIn };
   await (await getLocalStore()).groupRepo.put(updated);

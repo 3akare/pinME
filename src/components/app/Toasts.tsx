@@ -8,12 +8,15 @@ import { Icon } from "../ui/Icon";
 
 const TOAST_MS = 8000;
 
-/** Non-blocking notifications at the bottom of the screen; requests stay until answered. */
+/**
+ * Non-blocking notifications; requests stay until answered. On a phone they drop from the top, clear of
+ * the composer and the keyboard; on wider screens they sit in the bottom corner.
+ */
 export function Toasts() {
   const toasts = useToastStore((s) => s.toasts);
   if (toasts.length === 0) return null;
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex flex-col items-center gap-2 p-3 sm:items-end sm:p-5">
+    <div className="toast-stack pointer-events-none fixed inset-x-0 z-40 flex flex-col items-center gap-2 p-3 sm:items-end sm:p-5">
       {toasts.map((t) => (
         <ToastItem key={t.id} toast={t} />
       ))}
